@@ -30,7 +30,7 @@ src/
   lib/auth/       sesiones, contraseñas, roles y requerirRol()
   proxy.ts        redirige a /login si no hay sesión en zonas privadas
 drizzle/          migraciones SQL generadas
-scripts/migrate.mjs  aplica migraciones y crea datos iniciales
+src/db/migrar.ts     aplica migraciones y crea datos iniciales (al arrancar)
 docs/             diseño de entidades
 tests/            tests unitarios
 ```
@@ -68,5 +68,5 @@ El sitio se despliega solo desde la rama `main` de GitHub.
 1. En hPanel, crea la base de datos MySQL y un usuario con contraseña segura.
 2. En la app Node.js conectada a este repositorio usa Node 22 (también compila con Node 20), comando de build `npm run build` y de inicio `npm start`.
 3. Carga las variables de entorno de `.env.example` (`DATABASE_URL`, `SEED_ADMIN_USUARIO`, `SEED_ADMIN_PASSWORD`). Nunca subas `.env` al repositorio.
-4. Cada `npm start` ejecuta antes `scripts/migrate.mjs`, que aplica las migraciones nuevas. El admin inicial se crea solo si todavía no hay ninguno.
+4. Al arrancar, la app ejecuta `src/db/migrar.ts` (desde `src/instrumentation.ts`), que aplica las migraciones nuevas. Si falla, el error aparece en el log del servidor con el prefijo `[migrar]`. El admin inicial se crea solo si todavía no hay ninguno.
 5. Tras el primer ingreso, cambia la contraseña del admin inicial.
