@@ -14,4 +14,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Diseño de datos: `docs/entidades.md`. Si cambias `src/db/schema.ts`, actualiza ese documento y genera la migración con `npm run db:generate`.
 - Toda página o Server Action privada debe llamar a `requerirRol()` de `src/lib/auth/dal.ts`.
 - `cacheComponents` está desactivado a propósito para mantener el modelo de renderizado simple.
+- Se compila con Webpack (`next build --webpack`): Turbopack falla en el build de Hostinger al procesar el CSS.
 - Antes de subir cambios: `npm run typecheck && npm run lint && npm test && npm run build`.
