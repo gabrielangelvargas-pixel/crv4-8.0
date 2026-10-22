@@ -15,7 +15,7 @@ El diseño de datos está en [docs/entidades.md](docs/entidades.md).
 | Framework | Next.js 16 (App Router) + React 19 + TypeScript | una sola app para la web pública y la gestión, con páginas renderizadas en el servidor |
 | Base de datos | MySQL / MariaDB | la que ofrece Hostinger |
 | Acceso a datos | Drizzle ORM + mysql2 | esquema tipado en `src/db/schema.ts` y migraciones SQL versionadas en `drizzle/` |
-| Estilos | Tailwind CSS 4 | |
+| Estilos | Tailwind CSS 4 (vía PostCSS) | |
 | Validación | Zod | |
 | Login | sesiones propias en la tabla `sesiones` + cookie httpOnly; contraseñas con bcrypt | |
 | Tests | Vitest | |
@@ -66,7 +66,7 @@ Comandos útiles:
 El sitio se despliega solo desde la rama `main` de GitHub.
 
 1. En hPanel, crea la base de datos MySQL y un usuario con contraseña segura.
-2. En la app Node.js conectada a este repositorio usa Node 22, comando de build `npm run build` y de inicio `npm start`.
+2. En la app Node.js conectada a este repositorio usa Node 22 (también compila con Node 20), comando de build `npm run build` y de inicio `npm start`.
 3. Carga las variables de entorno de `.env.example` (`DATABASE_URL`, `SEED_ADMIN_USUARIO`, `SEED_ADMIN_PASSWORD`). Nunca subas `.env` al repositorio.
 4. Cada `npm start` ejecuta antes `scripts/migrate.mjs`, que aplica las migraciones nuevas. El admin inicial se crea solo si todavía no hay ninguno.
 5. Tras el primer ingreso, cambia la contraseña del admin inicial.
