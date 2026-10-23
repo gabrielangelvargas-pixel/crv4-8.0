@@ -24,7 +24,7 @@ function Buscador({ className }: { className?: string }) {
 export default async function PublicoLayout({ children }: LayoutProps<"/">) {
   const usuario = await usuarioActual();
   return (
-    <div className="flex flex-1 flex-col pb-16 md:pb-0">
+    <div className="flex flex-1 flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
       {usuario?.accesoGestion && (
         <div className="bg-slate-900 text-sm text-slate-200">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1.5">

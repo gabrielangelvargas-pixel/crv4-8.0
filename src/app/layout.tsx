@@ -22,6 +22,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#1e40af",
+  // Deja dibujar debajo de la barra del sistema: la barra inferior azul la cubre (ver navegacion.tsx).
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
