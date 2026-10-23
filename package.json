@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "node scripts/empaquetar-migraciones.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "drizzle-kit generate && node scripts/empaquetar-migraciones.mjs",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio"
   },

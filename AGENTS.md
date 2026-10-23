@@ -11,7 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Proyecto CRV4
 
 - Idioma del código de dominio y la interfaz: español (tablas, columnas, rutas, textos).
-- Diseño de datos: `docs/entidades.md`. Si cambias `src/db/schema.ts`, actualiza ese documento y genera la migración con `npm run db:generate`.
+- Diseño de datos: `docs/entidades.md`. Si cambias `src/db/schema.ts`, actualiza ese documento y genera la migración con `npm run db:generate` (también regenera `src/db/migraciones.json`, que se commitea: Hostinger publica solo el build, sin la carpeta `drizzle/`).
 - Toda página o Server Action privada debe llamar a `requerirRol()` de `src/lib/auth/dal.ts`.
 - `cacheComponents` está desactivado a propósito para mantener el modelo de renderizado simple.
 - Se compila con Webpack (`next build --webpack`): Turbopack falla en el build de Hostinger al procesar el CSS.
