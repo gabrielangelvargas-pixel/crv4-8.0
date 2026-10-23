@@ -198,5 +198,22 @@ Reglas:
 - Ingresos y ajustes: solo admin.
 - Entregar un pedido genera automáticamente movimientos de tipo entrega_pedido.
 
+## 11. Portada (slider del inicio de la web)
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | entero, PK | |
+| titulo | texto, opcional | texto alternativo de la imagen |
+| enlace | texto, opcional | página de la web (`/catalogo?rubro=...`) o `https://...` |
+| imagen_escritorio | texto | `portadas/<único>-escritorio.webp`, 1920 × 640 (3:1), compu y tablet |
+| imagen_movil | texto, opcional | `portadas/<único>-movil.webp`, 1080 × 1080 (1:1), celular |
+| orden | entero | menor primero |
+| activo | sí/no | |
+
+Reglas:
+- Las imágenes se recortan desde el centro al tamaño exacto y se guardan en WEBP en la carpeta de imágenes; cada subida usa un nombre nuevo y borra la anterior.
+- En el celular se usa la cuadrada solo si todas las activas la tienen (para que el slider no cambie de alto).
+- Se administra con el permiso `portada`.
+
 ## Para más adelante
 Pagos y medios de pago, estadísticas, compras a proveedores, identificación fiscal del proveedor, variantes con dos dimensiones.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { IconoBuscar, IconoCarrito, IconoUsuario } from "@/components/iconos";
+import { usuarioActual } from "@/lib/auth/dal";
 import { NavegacionInferior, NavegacionSuperior } from "./navegacion";
 
 function Buscador({ className }: { className?: string }) {
@@ -20,9 +21,20 @@ function Buscador({ className }: { className?: string }) {
 }
 
 // Web pública, pensada primero para el celular.
-export default function PublicoLayout({ children }: LayoutProps<"/">) {
+export default async function PublicoLayout({ children }: LayoutProps<"/">) {
+  const usuario = await usuarioActual();
   return (
     <div className="flex flex-1 flex-col pb-16 md:pb-0">
+      {usuario?.accesoGestion && (
+        <div className="bg-slate-900 text-sm text-slate-200">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1.5">
+            <span className="truncate">Estás viendo la web como {usuario.nombre}</span>
+            <Link href="/admin" className="shrink-0 font-medium text-white hover:underline">
+              Ir a Gestión
+            </Link>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-30 border-b border-borde bg-superficie/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 md:gap-6 md:py-3">
           <Link href="/" className="shrink-0 text-lg font-bold tracking-tight text-marca">

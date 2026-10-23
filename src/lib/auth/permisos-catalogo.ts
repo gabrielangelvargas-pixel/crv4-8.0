@@ -9,6 +9,7 @@ export const MODULOS = [
   "pedidos",
   "usuarios",
   "roles",
+  "portada",
 ] as const;
 export type Modulo = (typeof MODULOS)[number];
 
@@ -24,6 +25,7 @@ export const NOMBRE_MODULO: Record<Modulo, string> = {
   pedidos: "Pedidos y ventas",
   usuarios: "Usuarios",
   roles: "Roles y permisos",
+  portada: "Portada de la web",
 };
 
 export type Permiso = `${Modulo}:${Accion}`;

@@ -16,6 +16,12 @@ export default async function GestionLayout({ children }: LayoutProps<"/admin">)
         pie={
           <>
             <Link
+              href="/"
+              className="flex min-h-11 w-full items-center rounded-lg px-3 text-sm text-slate-300 hover:bg-white/10"
+            >
+              Ver la web
+            </Link>
+            <Link
               href="/admin/mi-cuenta"
               className="flex min-h-11 w-full items-center rounded-lg px-3 text-sm text-slate-300 hover:bg-white/10"
             >

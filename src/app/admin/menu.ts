@@ -12,6 +12,7 @@ export const MENU_GESTION: ItemMenu[] = [
   { href: "/admin/rubros", titulo: "Rubros", modulo: "rubros" },
   { href: "/admin/proveedores", titulo: "Proveedores", modulo: "proveedores" },
   { href: "/admin/stock", titulo: "Stock", modulo: "stock" },
+  { href: "/admin/portada", titulo: "Portada de la web", modulo: "portada" },
   { href: "/admin/usuarios", titulo: "Usuarios", modulo: "usuarios" },
   { href: "/admin/roles", titulo: "Roles y permisos", modulo: "roles" },
 ];

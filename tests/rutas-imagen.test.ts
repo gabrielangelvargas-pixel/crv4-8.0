@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rutaFotoProducto, rutaValida } from "@/lib/rutas-imagen";
+import { rutaFotoPortada, rutaFotoProducto, rutaValida } from "@/lib/rutas-imagen";
 
 describe("rutas de imágenes", () => {
   it("arma la ruta con el rubro y el código", () => {
@@ -23,5 +23,14 @@ describe("rutas de imágenes", () => {
     ]) {
       expect(rutaValida(ruta), ruta).toBe(false);
     }
+  });
+});
+
+describe("rutas de la portada", () => {
+  it("arma y acepta las rutas de escritorio y celular", () => {
+    expect(rutaFotoPortada("escritorio", "lq3x9k2a")).toBe("portadas/lq3x9k2a-escritorio.webp");
+    expect(rutaValida("portadas/lq3x9k2a-movil.webp")).toBe(true);
+    expect(rutaValida("portadas/lq3x9k2a-tablet.webp")).toBe(false);
+    expect(rutaValida("portadas/../x-movil.webp")).toBe(false);
   });
 });
