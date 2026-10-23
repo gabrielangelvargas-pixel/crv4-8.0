@@ -16,7 +16,11 @@ Base de datos prevista: MySQL (Hostinger). Todas las tablas llevan `creado_en` y
 | ultimo_acceso | fecha y hora | |
 
 Reglas:
-- Login con nombre de usuario y contraseña.
+- Login con nombre de usuario y contraseña (mínimo 8 caracteres).
+- Desde la gestión solo se crean usuarios con roles de gestión; las cuentas de clientes las crea el checkout.
+- Nadie cambia su propio rol ni se desactiva; quien no tiene acceso total no modifica ni crea administradores; siempre queda al menos un administrador activo.
+- Cambiar una contraseña cierra las sesiones abiertas de ese usuario (si es la propia, menos la actual).
+- Un usuario con ventas o movimientos de stock no se borra: se desactiva.
 - Un visitante puede navegar y llenar el carrito sin cuenta. Al confirmar el pedido se le piden algunos datos, se crea su Cliente y su Usuario (rol cliente) y queda con sesión persistente.
 
 ## 2. Rubro (cerrada, v1)
