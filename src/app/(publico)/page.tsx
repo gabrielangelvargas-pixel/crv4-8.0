@@ -1,4 +1,10 @@
+import Link from "next/link";
 import { BotonEnlace, Tarjeta } from "@/components/ui";
+import { listarCatalogo } from "@/lib/catalogo";
+import { TarjetaProducto } from "./catalogo/tarjeta-producto";
+
+// Lee los destacados de la base en cada visita (no se arma en el build).
+export const dynamic = "force-dynamic";
 
 const DESTACADOS = [
   { titulo: "Catálogo por rubros", texto: "Encuentra los productos filtrando por rubro y subrubro." },
@@ -6,7 +12,8 @@ const DESTACADOS = [
   { titulo: "Retiro o envío", texto: "Retira en el local o recíbelo en la dirección que elijas." },
 ];
 
-export default function Inicio() {
+export default async function Inicio() {
+  const destacados = (await listarCatalogo({ destacados: true })).filas.slice(0, 8);
   return (
     <div className="flex flex-col gap-8 md:gap-12">
       <section className="rounded-2xl bg-marca px-5 py-10 text-white md:px-12 md:py-16">
@@ -18,6 +25,19 @@ export default function Inicio() {
           Ver catálogo
         </BotonEnlace>
       </section>
+      {destacados.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-xl font-semibold tracking-tight">Destacados</h2>
+            <Link href="/catalogo" className="text-sm text-marca hover:underline">Ver todo</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {destacados.map((p) => (
+              <TarjetaProducto key={p.id} producto={p} />
+            ))}
+          </div>
+        </section>
+      )}
       <section className="grid gap-3 sm:grid-cols-3">
         {DESTACADOS.map((d) => (
           <Tarjeta key={d.titulo}>
