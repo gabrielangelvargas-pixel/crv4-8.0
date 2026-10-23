@@ -102,6 +102,11 @@ Sin identificación fiscal por ahora. No se registran compras a proveedores por 
 | origen | web / presencial | |
 | activo | booleano | |
 
+Reglas:
+- El teléfono se guarda sin espacios ni separadores y no se repite entre clientes (será el usuario de la web).
+- "Consumidor final" se precarga para las ventas presenciales: no se borra ni cambia de nombre o teléfono.
+- Un cliente con pedidos o con cuenta web no se borra: se desactiva. Una dirección usada en un pedido no se quita.
+
 ## 7. Direccion (del cliente, v1)
 
 | Campo | Tipo | Notas |
