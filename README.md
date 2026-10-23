@@ -68,6 +68,7 @@ El sitio se despliega solo desde la rama `main` de GitHub.
 
 1. En hPanel, crea la base de datos MySQL y un usuario con contraseña segura.
 2. En la app Node.js conectada a este repositorio usa Node 22 (también compila con Node 20), comando de build `npm run build` y de inicio `npm start`.
-3. Carga las variables de entorno de `.env.example` (`DATABASE_URL`, `SEED_ADMIN_USUARIO`, `SEED_ADMIN_PASSWORD`). Nunca subas `.env` al repositorio.
+3. Carga las variables de entorno de `.env.example` (`DATABASE_URL`, `SEED_ADMIN_USUARIO`, `SEED_ADMIN_PASSWORD` y, si hace falta, `CARPETA_IMAGENES`). Nunca subas `.env` al repositorio.
+   Las fotos de productos se guardan en `~/imagenes` (fuera de `public_html`), en 500x500 WEBP con el código de la variante principal, y se sirven desde `/imagenes/CODIGO.webp`.
 4. Al arrancar, la app ejecuta `src/db/migrar.ts` (desde `src/instrumentation.ts`), que aplica las migraciones nuevas. Si falla, el error aparece en el log del servidor con el prefijo `[migrar]`. El admin inicial se crea solo si todavía no hay ninguno.
 5. Tras el primer ingreso, cambia la contraseña del admin inicial.

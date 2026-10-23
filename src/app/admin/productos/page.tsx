@@ -5,6 +5,7 @@ import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { listarProductos, PRODUCTOS_POR_PAGINA } from "@/lib/gestion/productos";
 import { arbolDeRubros } from "@/lib/gestion/rubros";
+import { urlImagen } from "@/lib/imagenes";
 import { formatearCantidad, formatearPrecio } from "@/lib/numeros";
 
 export const metadata = { title: "Productos · CRV4" };
@@ -77,15 +78,23 @@ export default async function ProductosPage({ searchParams }: PageProps<"/admin/
             titulo: "Producto",
             principal: true,
             celda: (p) => (
-              <>
-                <Link href={`/admin/productos/${p.id}`} className="font-medium text-marca hover:underline">
-                  {p.nombre}
-                </Link>
-                <p className="font-normal text-texto-suave">
-                  {p.codigo}
-                  {Number(p.variantes) > 1 && ` · ${p.variantes} variantes`}
-                </p>
-              </>
+              <div className="flex items-center gap-3">
+                <div className="size-12 shrink-0 overflow-hidden rounded-md border border-borde bg-white">
+                  {p.imagen && (
+                    // eslint-disable-next-line @next/next/no-img-element -- la foto ya está optimizada a 500x500 WEBP
+                    <img src={urlImagen(p.imagen, p.actualizadoEn)!} alt="" loading="lazy" className="size-full object-contain" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <Link href={`/admin/productos/${p.id}`} className="font-medium text-marca hover:underline">
+                    {p.nombre}
+                  </Link>
+                  <p className="font-normal text-texto-suave">
+                    {p.codigo}
+                    {Number(p.variantes) > 1 && ` · ${p.variantes} variantes`}
+                  </p>
+                </div>
+              </div>
             ),
           },
           { titulo: "Rubro", celda: (p) => (p.rubroPadre ? `${p.rubroPadre} › ${p.rubro}` : p.rubro) },

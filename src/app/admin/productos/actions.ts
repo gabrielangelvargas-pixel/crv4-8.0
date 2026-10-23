@@ -11,6 +11,7 @@ import { tienePermiso } from "@/lib/auth/permisos";
 import type { UsuarioSesion } from "@/lib/auth/session";
 import { codigosEnUso, obtenerProducto, variantesConHistorial, type ProductoConVariantes } from "@/lib/gestion/productos";
 import { obtenerRubro } from "@/lib/gestion/rubros";
+import { borrarImagen, ErrorImagen, guardarImagenProducto, renombrarImagen } from "@/lib/imagenes";
 import { textoOpcional } from "@/lib/texto";
 import { validarVariantes, type VarianteValidada } from "./datos";
 
@@ -85,13 +86,48 @@ function filaVariante(v: VarianteValidada) {
   };
 }
 
+function archivoSubido(form: FormData): File | null {
+  const archivo = form.get("imagen");
+  return archivo instanceof File && archivo.size > 0 ? archivo : null;
+}
+
+const codigoPrincipal = (variantesValidadas: VarianteValidada[]) =>
+  (variantesValidadas.find((v) => v.esPrincipal) ?? variantesValidadas[0]).codigo;
+
+// La foto se guarda con el código de la variante principal: "7790895000997.webp".
+async function resolverImagen(
+  form: FormData,
+  variantesValidadas: VarianteValidada[],
+  anterior: string | null,
+): Promise<{ ok: true; imagen: string | null } | { ok: false; error: string }> {
+  const codigo = codigoPrincipal(variantesValidadas);
+  const archivo = archivoSubido(form);
+  try {
+    if (archivo) {
+      const nombre = await guardarImagenProducto(archivo, codigo);
+      if (anterior && anterior !== nombre) await borrarImagen(anterior);
+      return { ok: true, imagen: nombre };
+    }
+    if (form.get("quitarImagen") === "on") {
+      await borrarImagen(anterior);
+      return { ok: true, imagen: null };
+    }
+    return { ok: true, imagen: anterior ? await renombrarImagen(anterior, codigo) : null };
+  } catch (error) {
+    if (error instanceof ErrorImagen) return { ok: false, error: error.message };
+    throw error;
+  }
+}
+
 export async function crearProducto(_prev: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const usuario = await requerirPermiso("productos", "crear");
   const datos = await leerFormulario(form, usuario);
   if (!datos.ok) return { error: datos.error };
+  const imagen = await resolverImagen(form, datos.variantes, null);
+  if (!imagen.ok) return { error: imagen.error };
 
   await db.transaction(async (tx) => {
-    const [{ id }] = await tx.insert(productos).values(datos.producto).$returningId();
+    const [{ id }] = await tx.insert(productos).values({ ...datos.producto, imagen: imagen.imagen }).$returningId();
     await tx.insert(variantes).values(datos.variantes.map((v) => ({ ...filaVariante(v), productoId: id })));
   });
   revalidatePath("/admin/productos");
@@ -116,9 +152,11 @@ export async function editarProducto(
     const nombre = quitadas.find((v) => v.id === conHistorial[0])?.valor;
     return { error: `La variante ${nombre} ya tiene ventas o movimientos de stock: desactívala en vez de quitarla` };
   }
+  const imagen = await resolverImagen(form, datos.variantes, actual.imagen);
+  if (!imagen.ok) return { error: imagen.error };
 
   await db.transaction(async (tx) => {
-    await tx.update(productos).set(datos.producto).where(eq(productos.id, id));
+    await tx.update(productos).set({ ...datos.producto, imagen: imagen.imagen }).where(eq(productos.id, id));
     if (quitadas.length) await tx.delete(variantes).where(inArray(variantes.id, quitadas.map((v) => v.id)));
     // Primero se liberan los códigos de las variantes editadas para poder intercambiarlos.
     for (const v of datos.variantes) {
@@ -142,6 +180,7 @@ export async function eliminarProducto(id: number): Promise<void> {
   }
 
   await db.delete(productos).where(eq(productos.id, id));
+  await borrarImagen(producto.imagen);
   revalidatePath("/admin/productos");
   redirect("/admin/productos");
 }

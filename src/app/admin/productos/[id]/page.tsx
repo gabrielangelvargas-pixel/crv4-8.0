@@ -4,6 +4,7 @@ import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { obtenerProducto, opcionesProveedor } from "@/lib/gestion/productos";
 import { arbolDeRubros } from "@/lib/gestion/rubros";
+import { urlImagen } from "@/lib/imagenes";
 import { formatearCantidad, importeParaCampo } from "@/lib/numeros";
 import { editarProducto, eliminarProducto } from "../actions";
 import { ProductoForm } from "../producto-form";
@@ -56,6 +57,7 @@ export default async function ProductoPage({ params, searchParams }: PageProps<"
           esPrincipal: v.esPrincipal,
           stock: formatearCantidad(v.stockActual),
         }))}
+        imagenActual={urlImagen(producto.imagen, producto.actualizadoEn)}
         soloLectura={!tienePermiso(usuario, "productos", "editar")}
       />
       {tienePermiso(usuario, "productos", "eliminar") && (

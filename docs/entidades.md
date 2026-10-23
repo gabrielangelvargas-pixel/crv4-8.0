@@ -51,7 +51,7 @@ Reglas:
 | rubro_id | FK a Rubro | siempre un subrubro |
 | proveedor_id | FK a Proveedor | |
 | tipo_variante | ninguna / color / tamaño / presentación | una sola dimensión por producto (confirmado) |
-| imagen | texto | imagen general |
+| imagen | texto | nombre del archivo, ej. `7790895000997.webp` (ver reglas) |
 | visible_web | booleano | |
 | destacado | booleano | portada |
 | activo | booleano | |
@@ -77,6 +77,7 @@ Reglas:
 Reglas:
 - Todo producto tiene al menos una variante; sin variantes reales tiene una sola ("Única"). Así pedidos, ventas y stock siempre apuntan a una variante.
 - La URL pública usa el `codigo` de la variante principal; en la página se elige la variante.
+- La foto del producto se ajusta a 500x500 (sin recortar, con fondo blanco), se convierte a WEBP y se guarda fuera de lo publicado (`CARPETA_IMAGENES`, por defecto `~/imagenes`) con el código de la variante principal. Si ese código cambia, el archivo se renombra.
 
 ## 5. Proveedor (cerrada, v1)
 
