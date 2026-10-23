@@ -39,7 +39,7 @@ export async function migrar(): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("Falta la variable DATABASE_URL");
 
-  const conn = await mysql.createConnection({ uri: url, timezone: "Z" });
+  const conn = await mysql.createConnection({ uri: url, timezone: "Z", charset: "utf8mb4" });
   try {
     await aplicarMigraciones(conn);
     console.log("[migrar] Base de datos al día");

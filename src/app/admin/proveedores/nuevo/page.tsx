@@ -1,3 +1,4 @@
+import { EncabezadoPagina } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { crearProveedor } from "../actions";
 import { ProveedorForm } from "../proveedor-form";
@@ -8,9 +9,9 @@ export default async function NuevoProveedorPage() {
   await requerirPermiso("proveedores", "crear");
 
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Nuevo proveedor</h1>
+    <>
+      <EncabezadoPagina titulo="Nuevo proveedor" />
       <ProveedorForm accion={crearProveedor} />
-    </section>
+    </>
   );
 }
