@@ -92,7 +92,7 @@ export function PortadaForm({ accion, inicial, soloLectura = false }: Props) {
         <SelectorImagen
           nombre="imagenMovil"
           titulo="Imagen para celular (opcional)"
-          ayuda="Cuadrada 1:1, ideal 1080 × 1080 píxeles. Si no la cargas, en el celular se usa la de compu."
+          ayuda="Cuadrada 1:1, ideal 1080 × 1080 píxeles. En el celular el slider es cuadrado si alguna imagen la tiene, y las que no la tengan no se muestran ahí."
           actual={inicial?.imagenMovil ?? null}
           proporcion="aspect-square max-w-xs"
           quitar={{ marcado: quitarMovil, cambiar: setQuitarMovil }}
