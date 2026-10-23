@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, count, desc, eq, like, lte, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { movimientosStock, productos, rubros, usuarios, variantes } from "@/db/schema";
+import { movimientosStock, pedidos, productos, rubros, usuarios, variantes } from "@/db/schema";
 
 export const VARIANTES_POR_PAGINA = 50;
 
@@ -98,10 +98,12 @@ export async function movimientosDeVariante(id: number, limite = 100) {
       pedidoId: movimientosStock.pedidoId,
       motivo: movimientosStock.motivo,
       fecha: movimientosStock.fecha,
+      pedidoNumero: pedidos.numero,
       usuario: usuarios.nombre,
     })
     .from(movimientosStock)
     .innerJoin(usuarios, eq(usuarios.id, movimientosStock.usuarioId))
+    .leftJoin(pedidos, eq(pedidos.id, movimientosStock.pedidoId))
     .where(eq(movimientosStock.varianteId, id))
     .orderBy(desc(movimientosStock.fecha), desc(movimientosStock.id))
     .limit(limite);

@@ -81,7 +81,17 @@ export default async function StockVariantePage({ params, searchParams }: PagePr
                 titulo: "Stock",
                 celda: (m) => `${formatearCantidad(m.stockAnterior)} → ${formatearCantidad(m.stockNuevo)}`,
               },
-              { titulo: "Motivo", celda: (m) => m.motivo ?? (m.pedidoId ? `Pedido ${m.pedidoId}` : "—") },
+              {
+                titulo: "Motivo",
+                celda: (m) =>
+                  m.pedidoId ? (
+                    <Link href={`/admin/pedidos/${m.pedidoId}`} className="text-marca hover:underline">
+                      Pedido N.º {m.pedidoNumero}
+                    </Link>
+                  ) : (
+                    (m.motivo ?? "—")
+                  ),
+              },
               { titulo: "Usuario", celda: (m) => m.usuario },
             ]}
           />
