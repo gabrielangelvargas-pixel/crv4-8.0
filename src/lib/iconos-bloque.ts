@@ -5,6 +5,9 @@ export const ICONOS_BLOQUE = [
   "billetera",
   "camion",
   "tarjeta",
+  "atencion",
+  "consultas",
+  "acuerdo",
   "tienda",
   "reloj",
   "escudo",
@@ -21,6 +24,9 @@ export const NOMBRE_ICONO: Record<ClaveIcono, string> = {
   billetera: "Billetera / pagos",
   camion: "Camión / envíos",
   tarjeta: "Tarjeta",
+  atencion: "Atención al público",
+  consultas: "Consultas / chat",
+  acuerdo: "Apretón de manos",
   tienda: "Local",
   reloj: "Reloj / horarios",
   escudo: "Escudo / compra segura",
@@ -29,3 +35,8 @@ export const NOMBRE_ICONO: Record<ClaveIcono, string> = {
   regalo: "Regalo",
   estrella: "Estrella",
 };
+
+// Un texto se corta en líneas con Enter o escribiendo <br>.
+export function lineasDeTexto(texto: string): string[] {
+  return texto.split(/<br\s*\/?>|\r?\n/i).map((l) => l.trim()).filter(Boolean);
+}

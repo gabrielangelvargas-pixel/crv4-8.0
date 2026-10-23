@@ -46,7 +46,7 @@ export function BloquesForm({ accion, inicial, soloLectura = false }: Props) {
     <form onSubmit={alEnviar} className="flex flex-col gap-4 rounded-xl border border-borde bg-superficie p-4 sm:p-6 lg:max-w-4xl">
       <div>
         <h2 className="font-semibold">Bloques de información</h2>
-        <p className="text-sm text-texto-suave">Se muestran debajo del slider, en este orden. Destilda “Visible” para ocultar uno sin borrarlo.</p>
+        <p className="text-sm text-texto-suave">Se muestran debajo del slider, en este orden. Destilda “Visible” para ocultar uno sin borrarlo. En el texto, Enter (o &lt;br&gt;) corta la línea.</p>
       </div>
       <fieldset disabled={soloLectura} className="flex flex-col gap-3">
         {filas.map((b, i) => (
@@ -68,7 +68,15 @@ export function BloquesForm({ accion, inicial, soloLectura = false }: Props) {
             </div>
             <div className="flex flex-1 flex-col gap-2">
               <input aria-label="Título" placeholder="Título" maxLength={60} value={b.titulo} onChange={(e) => cambiar(i, { titulo: e.currentTarget.value })} className={claseCampo} />
-              <input aria-label="Texto" placeholder="Texto (opcional)" maxLength={160} value={b.texto} onChange={(e) => cambiar(i, { texto: e.currentTarget.value })} className={claseCampo} />
+              <textarea
+                aria-label="Texto"
+                placeholder="Texto (opcional). Enter para cortar la línea."
+                rows={2}
+                maxLength={160}
+                value={b.texto}
+                onChange={(e) => cambiar(i, { texto: e.currentTarget.value })}
+                className={claseCampo}
+              />
               <div className="flex flex-wrap items-center gap-2">
                 <label className="mr-auto flex min-h-9 items-center gap-2 text-sm">
                   <input type="checkbox" className="size-5 accent-marca" checked={b.activo} onChange={(e) => cambiar(i, { activo: e.currentTarget.checked })} />
