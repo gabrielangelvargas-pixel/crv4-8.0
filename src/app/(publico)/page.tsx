@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Fragment, type CSSProperties } from "react";
 import { BotonEnlace } from "@/components/ui";
 import { usuarioActual } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { listarCatalogo } from "@/lib/catalogo";
 import { listarBloques, portadasActivas } from "@/lib/gestion/portadas";
 import { IconoBloque } from "@/components/iconos-bloques";
+import { lineasDeTexto } from "@/lib/iconos-bloque";
 import { urlImagen } from "@/lib/imagenes";
 import { TarjetaProducto } from "./catalogo/tarjeta-producto";
 import { SliderPortada } from "./slider-portada";
@@ -56,14 +58,32 @@ export default async function Inicio() {
         </section>
       )}
       {bloques.length > 0 && (
-        <section aria-label="Cómo compramos" className="-mt-2 grid gap-x-6 gap-y-4 rounded-2xl border border-borde bg-superficie px-4 py-5 sm:grid-cols-2 md:-mt-4 md:px-8 lg:grid-cols-4">
+        // En celular van de a dos (el último ocupa todo el ancho si son impares); desde
+        // escritorio, todos en una fila con el mismo ancho, hasta cuatro por fila.
+        <section
+          aria-label="Cómo compramos"
+          style={{ "--columnas": Math.min(bloques.length, 4) } as CSSProperties}
+          className="grid auto-rows-fr grid-cols-2 gap-3 md:gap-4 lg:grid-cols-[repeat(var(--columnas),minmax(0,1fr))]"
+        >
           {bloques.map((b) => (
-            <div key={b.id} className="flex items-start gap-3">
-              <IconoBloque icono={b.icono} className="size-9 shrink-0 text-texto" />
-              <div className="min-w-0">
-                <h2 className="text-sm font-bold tracking-wide uppercase">{b.titulo}</h2>
-                {b.texto && <p className="mt-0.5 text-sm text-texto-suave">{b.texto}</p>}
-              </div>
+            <div
+              key={b.id}
+              className="flex flex-col items-center gap-2 rounded-2xl border border-borde bg-superficie px-3 py-5 text-center shadow-sm last:odd:col-span-2 md:px-5 lg:last:odd:col-span-1"
+            >
+              <span className="flex size-12 items-center justify-center rounded-full bg-fondo text-marca md:size-14">
+                <IconoBloque icono={b.icono} className="size-6 md:size-7" />
+              </span>
+              <h2 className="text-sm font-bold tracking-wide uppercase">{b.titulo}</h2>
+              {b.texto && (
+                <p className="text-sm text-texto-suave">
+                  {lineasDeTexto(b.texto).map((linea, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && <br />}
+                      {linea}
+                    </Fragment>
+                  ))}
+                </p>
+              )}
             </div>
           ))}
         </section>
