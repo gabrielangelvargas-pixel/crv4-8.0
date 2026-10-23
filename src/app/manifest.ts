@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import icono192 from "./pwa/icono-192.png";
 import icono512 from "./pwa/icono-512.png";
+import iconoMaskable from "./pwa/icono-maskable-512.png";
 
 // Hace la web instalable como app en el celular y la compu.
 export default function manifest(): MetadataRoute.Manifest {
@@ -13,12 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#f8fafc",
+    background_color: "#ffffff",
     theme_color: "#1e40af",
     icons: [
       { src: icono192.src, sizes: "192x192", type: "image/png", purpose: "any" },
       { src: icono512.src, sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: icono512.src, sizes: "512x512", type: "image/png", purpose: "maskable" },
+      // Android recorta el ícono en círculo: esta versión tiene margen y fondo blanco.
+      { src: iconoMaskable.src, sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       { name: "Catálogo", url: "/catalogo" },

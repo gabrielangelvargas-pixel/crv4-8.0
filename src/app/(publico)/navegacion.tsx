@@ -15,13 +15,14 @@ function activo(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-// Barra inferior fija en el celular, al alcance del pulgar.
+// Barra inferior fija en el celular, al alcance del pulgar. Es azul y se extiende por
+// debajo de la barra de Android/iPhone (viewport-fit=cover), que así también se ve azul.
 export function NavegacionInferior() {
   const pathname = usePathname();
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-borde bg-superficie pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 bg-marca pb-[env(safe-area-inset-bottom)] text-white md:hidden"
     >
       <ul className="grid grid-cols-4">
         {ITEMS.map(({ href, titulo, Icono }) => (
@@ -29,9 +30,9 @@ export function NavegacionInferior() {
             <Link
               href={href}
               aria-current={activo(pathname, href) ? "page" : undefined}
-              className="flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs text-texto-suave aria-[current=page]:text-marca"
+              className="group flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs text-white/75 aria-[current=page]:font-semibold aria-[current=page]:text-white"
             >
-              <Icono className="size-6" />
+              <Icono className="box-content size-6 rounded-full px-3 py-0.5 group-aria-[current=page]:bg-white/20" />
               {titulo}
             </Link>
           </li>
