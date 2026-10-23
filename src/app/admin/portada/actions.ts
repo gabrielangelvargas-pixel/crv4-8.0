@@ -5,14 +5,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { portadas } from "@/db/schema";
+import { portadaBloques, portadas } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { obtenerPortada, type Portada } from "@/lib/gestion/portadas";
 import { borrarImagen, ErrorImagen, guardarImagenPortada } from "@/lib/imagenes";
 import type { FormatoPortada } from "@/lib/rutas-imagen";
 import { textoOpcional } from "@/lib/texto";
+import { validarBloques } from "./bloques-datos";
 
 export type EstadoFormulario = { error?: string } | undefined;
+export type EstadoBloques = { error?: string; ok?: boolean } | undefined;
 
 // El enlace puede ser una página de la web ("/catalogo?rubro=vasos") o una dirección completa.
 const datosPortada = z.object({
@@ -105,4 +107,20 @@ export async function eliminarPortada(id: number): Promise<void> {
   }
   refrescar();
   redirect("/admin/portada");
+}
+
+// Los bloques se guardan todos juntos: la lista del formulario reemplaza a la anterior.
+export async function guardarBloques(_prev: EstadoBloques, form: FormData): Promise<EstadoBloques> {
+  await requerirPermiso("portada", "editar");
+  const lista = validarBloques(String(form.get("bloques") ?? "[]"));
+  if (!lista.ok) return { error: lista.error };
+
+  await db.transaction(async (tx) => {
+    await tx.delete(portadaBloques);
+    if (lista.bloques.length) {
+      await tx.insert(portadaBloques).values(lista.bloques.map((b, orden) => ({ ...b, texto: b.texto || null, orden })));
+    }
+  });
+  refrescar();
+  return { ok: true };
 }

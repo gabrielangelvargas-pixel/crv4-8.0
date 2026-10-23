@@ -215,5 +215,20 @@ Reglas:
 - En el celular el slider es cuadrado si al menos una activa tiene imagen cuadrada, y ahí solo se muestran las que la tienen. Si ninguna la tiene, se usa la ancha.
 - Se administra con el permiso `portada`.
 
+## 12. PortadaBloque (bloques de información debajo del slider)
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | entero, PK | |
+| icono | texto | clave de la lista fija de íconos (`src/lib/iconos-bloque.ts`) |
+| titulo | texto | hasta 60 letras; se muestra en mayúsculas |
+| texto | texto, opcional | hasta 160 letras |
+| orden | entero | lo fija el orden de la lista en Gestión |
+| activo | sí/no | "Visible" |
+
+Reglas:
+- Se editan todos juntos en Gestión › Portada de la web (hasta 8) y se guardan de una vez.
+- La migración carga 4 de ejemplo (compra mayorista, descuentos, medios de pago, envíos).
+
 ## Para más adelante
 Pagos y medios de pago, estadísticas, compras a proveedores, identificación fiscal del proveedor, variantes con dos dimensiones.

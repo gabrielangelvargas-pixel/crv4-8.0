@@ -65,5 +65,14 @@
     "bps": true,
     "folderMillis": 1792758178046,
     "hash": "7eade28e40b7a50bc81cbfb7e3274144ddcd5af3141978d6bff42aef5c63d3f3"
+  },
+  {
+    "sql": [
+      "CREATE TABLE `portada_bloques` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`icono` varchar(30) NOT NULL,\n\t`titulo` varchar(60) NOT NULL,\n\t`texto` varchar(160),\n\t`orden` int NOT NULL DEFAULT 0,\n\t`activo` boolean NOT NULL DEFAULT true,\n\t`creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\tCONSTRAINT `portada_bloques_id` PRIMARY KEY(`id`)\n);\n",
+      "\nINSERT INTO `portada_bloques` (`icono`, `titulo`, `texto`, `orden`) VALUES\n\t('cajas', 'Compra mayorista', 'Mínimo de inversión $100.000.', 0),\n\t('etiqueta', 'Descuentos', 'Superando los $200.000 en tu pedido.', 1),\n\t('billetera', 'Medios de pago', 'Tarjetas, transferencia y efectivo.', 2),\n\t('camion', 'Envíos al país', 'Despachos rápidos y seguros.', 3);\n"
+    ],
+    "bps": true,
+    "folderMillis": 1792763901268,
+    "hash": "cfef485158a131d3bcef97292ed59b71adbcdccb013fcc51a8ee92dd1bca7701"
   }
 ]

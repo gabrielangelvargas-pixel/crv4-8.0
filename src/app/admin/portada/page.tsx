@@ -2,14 +2,17 @@ import Link from "next/link";
 import { BotonEnlace, EncabezadoPagina, Insignia, Tarjeta } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
-import { listarPortadas } from "@/lib/gestion/portadas";
+import { listarBloques, listarPortadas } from "@/lib/gestion/portadas";
 import { urlImagen } from "@/lib/imagenes";
+import type { ClaveIcono } from "@/lib/iconos-bloque";
+import { guardarBloques } from "./actions";
+import { BloquesForm } from "./bloques-form";
 
 export const metadata = { title: "Portada de la web · CRV4" };
 
 export default async function PortadasPage() {
   const usuario = await requerirPermiso("portada", "ver");
-  const lista = await listarPortadas();
+  const [lista, bloques] = await Promise.all([listarPortadas(), listarBloques()]);
 
   return (
     <>
@@ -51,6 +54,11 @@ export default async function PortadasPage() {
           ))}
         </ul>
       )}
+      <BloquesForm
+        accion={guardarBloques}
+        inicial={bloques.map((b) => ({ icono: b.icono as ClaveIcono, titulo: b.titulo, texto: b.texto ?? "", activo: b.activo }))}
+        soloLectura={!tienePermiso(usuario, "portada", "editar")}
+      />
     </>
   );
 }
