@@ -29,6 +29,13 @@
       "when": 1792763901268,
       "tag": "0003_portada_bloques",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1792767196776,
+      "tag": "0004_portada_franja_aviso",
+      "breakpoints": true
     }
   ]
 }

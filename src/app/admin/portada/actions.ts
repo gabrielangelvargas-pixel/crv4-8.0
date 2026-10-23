@@ -5,25 +5,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { portadaBloques, portadas } from "@/db/schema";
+import { portadaAviso, portadaBloques, portadaFranja, portadas } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
-import { obtenerPortada, type Portada } from "@/lib/gestion/portadas";
-import { borrarImagen, ErrorImagen, guardarImagenPortada } from "@/lib/imagenes";
+import { obtenerAviso, obtenerPortada, type Portada } from "@/lib/gestion/portadas";
+import { borrarImagen, ErrorImagen, guardarImagenAviso, guardarImagenPortada } from "@/lib/imagenes";
 import type { FormatoPortada } from "@/lib/rutas-imagen";
 import { textoOpcional } from "@/lib/texto";
 import { validarBloques } from "./bloques-datos";
+import { datosAviso, datosFranja, enlaceWeb } from "./promociones-datos";
 
 export type EstadoFormulario = { error?: string } | undefined;
 export type EstadoBloques = { error?: string; ok?: boolean } | undefined;
 
-// El enlace puede ser una página de la web ("/catalogo?rubro=vasos") o una dirección completa.
 const datosPortada = z.object({
   titulo: z.string().max(120, "El título es muy largo").nullable(),
-  enlace: z
-    .string()
-    .max(255)
-    .refine((v) => v.startsWith("/") || /^https?:\/\//.test(v), "El enlace tiene que empezar con / o con https://")
-    .nullable(),
+  enlace: enlaceWeb.nullable(),
   orden: z.number().int().min(0).max(9999),
   activo: z.boolean(),
 });
@@ -121,6 +117,59 @@ export async function guardarBloques(_prev: EstadoBloques, form: FormData): Prom
       await tx.insert(portadaBloques).values(lista.bloques.map((b, orden) => ({ ...b, texto: b.texto || null, orden })));
     }
   });
+  refrescar();
+  return { ok: true };
+}
+
+export async function guardarFranja(_prev: EstadoBloques, form: FormData): Promise<EstadoBloques> {
+  await requerirPermiso("portada", "editar");
+  const datos = datosFranja.safeParse({
+    frases: String(form.get("frases") ?? ""),
+    icono: form.get("icono"),
+    colorFondo: form.get("colorFondo"),
+    colorTexto: form.get("colorTexto"),
+    activo: form.get("activo") === "on",
+  });
+  if (!datos.success) return { error: datos.error.issues[0]?.message ?? "Datos inválidos" };
+
+  await db.insert(portadaFranja).values({ id: 1, ...datos.data }).onDuplicateKeyUpdate({ set: { ...datos.data, actualizadoEn: new Date() } });
+  refrescar();
+  return { ok: true };
+}
+
+export async function guardarAviso(_prev: EstadoBloques, form: FormData): Promise<EstadoBloques> {
+  await requerirPermiso("portada", "editar");
+  const datos = datosAviso.safeParse({
+    titulo: textoOpcional(form.get("titulo")),
+    texto: textoOpcional(form.get("texto")),
+    botonTexto: textoOpcional(form.get("botonTexto")),
+    enlace: textoOpcional(form.get("enlace")),
+    desde: textoOpcional(form.get("desde")),
+    hasta: textoOpcional(form.get("hasta")),
+    frecuencia: form.get("frecuencia"),
+    activo: form.get("activo") === "on",
+  });
+  if (!datos.success) return { error: datos.error.issues[0]?.message ?? "Datos inválidos" };
+
+  const actual = await obtenerAviso();
+  let imagen = form.get("quitarImagen") === "on" ? null : actual.imagen;
+  const subida = archivo(form, "imagen");
+  if (subida) {
+    try {
+      imagen = await guardarImagenAviso(subida);
+    } catch (error) {
+      if (error instanceof ErrorImagen) return { error: error.message };
+      throw error;
+    }
+  }
+  if (datos.data.activo && !imagen && !datos.data.titulo && !datos.data.texto) {
+    if (imagen !== actual.imagen) await borrarImagen(imagen);
+    return { error: "El aviso necesita una imagen, un título o un texto" };
+  }
+
+  const valores = { ...datos.data, imagen };
+  await db.insert(portadaAviso).values({ id: 1, ...valores }).onDuplicateKeyUpdate({ set: { ...valores, actualizadoEn: new Date() } });
+  if (actual.imagen && actual.imagen !== imagen) await borrarImagen(actual.imagen);
   refrescar();
   return { ok: true };
 }

@@ -1,9 +1,10 @@
 // Rutas de las fotos dentro de la carpeta de imágenes, siempre con "/":
 // "productos/<rubro>/<código>.webp". Las primeras fotos quedaron sueltas en la
 // raíz ("02101010.webp") y se siguen sirviendo hasta que se mueven al guardar.
-// Las de la portada: "portadas/lq3x9k2-escritorio.webp" (nombre nuevo en cada subida).
+// Las de la portada: "portadas/lq3x9k2-escritorio.webp" (nombre nuevo en cada subida);
+// la del aviso emergente termina en "-aviso.webp".
 const RUTA_PRODUCTO = /^(productos\/[a-z0-9]+(-[a-z0-9]+)*\/)?[A-Z0-9-]{1,13}\.webp$/;
-const RUTA_PORTADA = /^portadas\/[a-z0-9]{1,20}-(escritorio|movil)\.webp$/;
+const RUTA_PORTADA = /^portadas\/[a-z0-9]{1,20}-(escritorio|movil|aviso)\.webp$/;
 
 export function rutaValida(ruta: string): boolean {
   return RUTA_PRODUCTO.test(ruta) || RUTA_PORTADA.test(ruta);
@@ -16,7 +17,7 @@ export const MEDIDAS_PORTADA = {
 } as const;
 export type FormatoPortada = keyof typeof MEDIDAS_PORTADA;
 
-export function rutaFotoPortada(formato: FormatoPortada, unico: string): string {
+export function rutaFotoPortada(formato: FormatoPortada | "aviso", unico: string): string {
   return `portadas/${unico}-${formato}.webp`;
 }
 

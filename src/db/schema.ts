@@ -3,10 +3,12 @@
 // y Drizzle los devuelve como string para no perder precisión.
 import { relations, sql } from "drizzle-orm";
 import { ACCIONES, MODULOS } from "@/lib/auth/permisos-catalogo";
+import { FRECUENCIAS_AVISO } from "@/lib/promociones";
 import {
   type AnyMySqlColumn,
   boolean,
   char,
+  date,
   datetime,
   decimal,
   index,
@@ -313,6 +315,32 @@ export const portadaBloques = mysqlTable("portada_bloques", {
   texto: varchar("texto", { length: 160 }),
   orden: int("orden").notNull().default(0),
   activo: boolean("activo").notNull().default(true),
+  ...timestamps,
+});
+
+// 15. Franja de texto que se desplaza en el inicio (una sola fila, id = 1).
+export const portadaFranja = mysqlTable("portada_franja", {
+  id: int("id").primaryKey(),
+  frases: varchar("frases", { length: 600 }).notNull().default(""),
+  icono: varchar("icono", { length: 30 }).notNull().default("corazon"),
+  colorFondo: char("color_fondo", { length: 7 }).notNull().default("#1e40af"),
+  colorTexto: char("color_texto", { length: 7 }).notNull().default("#ffffff"),
+  activo: boolean("activo").notNull().default(false),
+  ...timestamps,
+});
+
+// 16. Aviso emergente (modal publicitario) del inicio (una sola fila, id = 1).
+export const portadaAviso = mysqlTable("portada_aviso", {
+  id: int("id").primaryKey(),
+  titulo: varchar("titulo", { length: 80 }),
+  texto: varchar("texto", { length: 300 }),
+  imagen: varchar("imagen", { length: 255 }),
+  botonTexto: varchar("boton_texto", { length: 30 }),
+  enlace: varchar("enlace", { length: 255 }),
+  desde: date("desde", { mode: "string" }),
+  hasta: date("hasta", { mode: "string" }),
+  frecuencia: mysqlEnum("frecuencia", FRECUENCIAS_AVISO).notNull().default("dia"),
+  activo: boolean("activo").notNull().default(false),
   ...timestamps,
 });
 

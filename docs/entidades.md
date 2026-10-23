@@ -230,5 +230,39 @@ Reglas:
 - Se editan todos juntos en Gestión › Portada de la web (hasta 8) y se guardan de una vez.
 - La migración carga 4 de ejemplo (compra mayorista, descuentos, medios de pago, envíos).
 
+## 13. PortadaFranja (franja de texto que se desplaza en el inicio)
+
+Una sola fila (id = 1); si no existe, vale lo de por defecto (oculta).
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | entero, PK | siempre 1 |
+| frases | texto | una por renglón, hasta 10 (600 letras en total) |
+| icono | texto | ícono entre frases, de la misma lista que los bloques |
+| color_fondo / color_texto | texto | `#rrggbb` |
+| activo | sí/no | necesita al menos una frase |
+
+Reglas:
+- Se muestra en el inicio, debajo de los bloques de información. Con "reducir movimiento" activado en el equipo queda quieta.
+
+## 14. PortadaAviso (aviso emergente / modal publicitario del inicio)
+
+Una sola fila (id = 1); si no existe, no hay aviso.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | entero, PK | siempre 1 |
+| titulo | texto, opcional | hasta 80 letras |
+| texto | texto, opcional | hasta 300 letras; Enter corta la línea |
+| imagen | texto, opcional | `portadas/<único>-aviso.webp`, se achica hasta 1080 × 1080 sin recortar |
+| boton_texto | texto, opcional | necesita enlace |
+| enlace | texto, opcional | página de la web o `https://...`; sin botón, se abre al tocar la imagen |
+| desde / hasta | fecha, opcional | fuera de ese rango no aparece (fecha de Argentina) |
+| frecuencia | `siempre` \| `dia` \| `una_vez` | cada visita (sesión del navegador), una vez por día o una sola vez |
+| activo | sí/no | necesita imagen, título o texto |
+
+Reglas:
+- Aparece solo en el inicio. El navegador recuerda que ya se vio; al guardar el aviso cuenta como nuevo y vuelve a mostrarse.
+
 ## Para más adelante
 Pagos y medios de pago, estadísticas, compras a proveedores, identificación fiscal del proveedor, variantes con dos dimensiones.
