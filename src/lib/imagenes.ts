@@ -62,6 +62,27 @@ export async function guardarImagenPortada(archivo: File, formato: FormatoPortad
   return ruta;
 }
 
+// La del aviso emergente conserva su forma: solo se achica para que entre en 1080 × 1080.
+export async function guardarImagenAviso(archivo: File): Promise<string> {
+  if (archivo.size > TAMANO_MAXIMO) throw new ErrorImagen("La imagen pesa más de 7 MB");
+  let datos: Buffer;
+  try {
+    datos = await sharp(Buffer.from(await archivo.arrayBuffer()))
+      .rotate()
+      .resize(1080, 1080, { fit: "inside", withoutEnlargement: true })
+      .flatten({ background: "#ffffff" })
+      .webp({ quality: 82 })
+      .toBuffer();
+  } catch {
+    throw new ErrorImagen("El archivo no es una imagen válida (JPG, PNG, WEBP…)");
+  }
+  const ruta = rutaFotoPortada("aviso", Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+  const destino = rutaImagen(ruta);
+  await mkdir(path.dirname(destino), { recursive: true });
+  await writeFile(destino, datos);
+  return ruta;
+}
+
 export async function borrarImagen(ruta: string | null | undefined): Promise<void> {
   if (!ruta || !rutaValida(ruta)) return;
   await rm(rutaImagen(ruta), { force: true });

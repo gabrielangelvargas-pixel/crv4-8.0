@@ -16,6 +16,13 @@
   --color-texto-suave: #64748b;
   --color-peligro: #dc2626;
   --color-exito: #16a34a;
+
+  --animate-franja: franja var(--duracion, 30s) linear infinite;
+  @keyframes franja {
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 @theme inline {

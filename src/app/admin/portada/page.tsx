@@ -2,23 +2,25 @@ import Link from "next/link";
 import { BotonEnlace, EncabezadoPagina, Insignia, Tarjeta } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
-import { listarBloques, listarPortadas } from "@/lib/gestion/portadas";
+import { listarBloques, listarPortadas, obtenerAviso, obtenerFranja } from "@/lib/gestion/portadas";
 import { urlImagen } from "@/lib/imagenes";
 import type { ClaveIcono } from "@/lib/iconos-bloque";
-import { guardarBloques } from "./actions";
+import { guardarAviso, guardarBloques, guardarFranja } from "./actions";
 import { BloquesForm } from "./bloques-form";
+import { AvisoForm, FranjaForm } from "./promociones-form";
 
 export const metadata = { title: "Portada de la web · CRV4" };
 
 export default async function PortadasPage() {
   const usuario = await requerirPermiso("portada", "ver");
-  const [lista, bloques] = await Promise.all([listarPortadas(), listarBloques()]);
+  const [lista, bloques, franja, aviso] = await Promise.all([listarPortadas(), listarBloques(), obtenerFranja(), obtenerAviso()]);
+  const soloLectura = !tienePermiso(usuario, "portada", "editar");
 
   return (
     <>
       <EncabezadoPagina
         titulo="Portada de la web"
-        descripcion="Imágenes que pasan solas en el inicio de la web, en el orden indicado."
+        descripcion="Lo que se ve en el inicio de la web: el slider de imágenes, los bloques de información, la franja de texto y el aviso emergente."
         acciones={
           <>
             <BotonEnlace href="/" variante="secundario">Ver la web</BotonEnlace>
@@ -57,8 +59,10 @@ export default async function PortadasPage() {
       <BloquesForm
         accion={guardarBloques}
         inicial={bloques.map((b) => ({ icono: b.icono as ClaveIcono, titulo: b.titulo, texto: b.texto ?? "", activo: b.activo }))}
-        soloLectura={!tienePermiso(usuario, "portada", "editar")}
+        soloLectura={soloLectura}
       />
+      <FranjaForm accion={guardarFranja} inicial={franja} soloLectura={soloLectura} />
+      <AvisoForm accion={guardarAviso} inicial={{ ...aviso, imagen: urlImagen(aviso.imagen, aviso.actualizadoEn) }} soloLectura={soloLectura} />
     </>
   );
 }

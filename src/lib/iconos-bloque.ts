@@ -15,6 +15,9 @@ export const ICONOS_BLOQUE = [
   "ubicacion",
   "regalo",
   "estrella",
+  "corazon",
+  "porcentaje",
+  "fuego",
 ] as const;
 export type ClaveIcono = (typeof ICONOS_BLOQUE)[number];
 
@@ -34,6 +37,9 @@ export const NOMBRE_ICONO: Record<ClaveIcono, string> = {
   ubicacion: "Ubicación",
   regalo: "Regalo",
   estrella: "Estrella",
+  corazon: "Corazón",
+  porcentaje: "Porcentaje / oferta",
+  fuego: "Fuego / lo más vendido",
 };
 
 // Un texto se corta en líneas con Enter o escribiendo <br>.

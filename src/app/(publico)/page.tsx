@@ -4,11 +4,14 @@ import { BotonEnlace } from "@/components/ui";
 import { usuarioActual } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { listarCatalogo } from "@/lib/catalogo";
-import { listarBloques, portadasActivas } from "@/lib/gestion/portadas";
+import { listarBloques, obtenerAviso, obtenerFranja, portadasActivas } from "@/lib/gestion/portadas";
 import { IconoBloque } from "@/components/iconos-bloques";
+import { Franja } from "@/components/franja";
 import { lineasDeTexto } from "@/lib/iconos-bloque";
+import { avisoVigente, frasesDeTexto, hoyEnArgentina } from "@/lib/promociones";
 import { urlImagen } from "@/lib/imagenes";
 import { TarjetaProducto } from "./catalogo/tarjeta-producto";
+import { AvisoEmergente } from "./aviso-emergente";
 import { SliderPortada } from "./slider-portada";
 
 // Lee los destacados de la base en cada visita (no se arma en el build).
@@ -16,13 +19,16 @@ export const dynamic = "force-dynamic";
 
 
 export default async function Inicio() {
-  const [catalogo, portadas, bloques, usuario] = await Promise.all([
+  const [catalogo, portadas, bloques, franja, aviso, usuario] = await Promise.all([
     listarCatalogo({ destacados: true }),
     portadasActivas(),
     listarBloques(true),
+    obtenerFranja(),
+    obtenerAviso(),
     usuarioActual(),
   ]);
   const destacados = catalogo.filas.slice(0, 8);
+  const mostrarAviso = aviso.activo && avisoVigente(aviso.desde, aviso.hasta, hoyEnArgentina());
   const puedeEditar = usuario?.accesoGestion && tienePermiso(usuario, "portada", "ver");
   return (
     <div className="flex flex-col gap-8 md:gap-12">
@@ -88,6 +94,15 @@ export default async function Inicio() {
           ))}
         </section>
       )}
+      {franja.activo && (
+        <Franja
+          frases={frasesDeTexto(franja.frases)}
+          icono={franja.icono}
+          colorFondo={franja.colorFondo}
+          colorTexto={franja.colorTexto}
+          className="-mx-4 md:mx-0 md:rounded-2xl"
+        />
+      )}
       {destacados.length > 0 && (
         <section className="flex flex-col gap-3">
           <div className="flex items-baseline justify-between gap-3">
@@ -100,6 +115,17 @@ export default async function Inicio() {
             ))}
           </div>
         </section>
+      )}
+      {mostrarAviso && (
+        <AvisoEmergente
+          clave={`${aviso.actualizadoEn.getTime()}`}
+          frecuencia={aviso.frecuencia}
+          titulo={aviso.titulo}
+          texto={aviso.texto}
+          imagen={urlImagen(aviso.imagen, aviso.actualizadoEn)}
+          botonTexto={aviso.botonTexto}
+          enlace={aviso.enlace}
+        />
       )}
     </div>
   );

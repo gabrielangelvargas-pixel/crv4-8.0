@@ -4,10 +4,13 @@ import {
   faClock,
   faComments,
   faCreditCard,
+  faFire,
   faGift,
   faHandshake,
   faHeadset,
+  faHeart,
   faLocationDot,
+  faPercent,
   faPhone,
   faShieldHalved,
   faStar,
@@ -19,7 +22,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { ClaveIcono } from "@/lib/iconos-bloque";
 
-// Íconos de Font Awesome (sólidos) para los bloques de información de la portada.
+// Íconos de Font Awesome (sólidos) para los bloques de información y la franja de la portada.
 const ICONOS: Record<ClaveIcono, IconDefinition> = {
   cajas: faBoxesStacked,
   etiqueta: faTags,
@@ -36,6 +39,9 @@ const ICONOS: Record<ClaveIcono, IconDefinition> = {
   ubicacion: faLocationDot,
   regalo: faGift,
   estrella: faStar,
+  corazon: faHeart,
+  porcentaje: faPercent,
+  fuego: faFire,
 };
 
 // Se dibuja el SVG directamente: no hace falta la hoja de estilos de Font Awesome.
