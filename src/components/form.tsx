@@ -1,23 +1,25 @@
 import type { ComponentProps, ReactNode } from "react";
 
+// text-base evita que el celular haga zoom al tocar el campo; min-h-11 da un
+// área táctil cómoda.
 const claseInput =
-  "rounded-md border border-neutral-300 px-3 py-2 text-base disabled:bg-neutral-100";
+  "min-h-11 w-full rounded-lg border border-borde bg-superficie px-3 py-2 text-base focus:border-marca disabled:bg-fondo disabled:text-texto-suave";
 
 type CampoProps = ComponentProps<"input"> & { etiqueta: string; ayuda?: string };
 
 export function Campo({ etiqueta, ayuda, className, ...props }: CampoProps) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex flex-col gap-1.5 text-sm font-medium">
       {etiqueta}
       <input {...props} className={`${claseInput} ${className ?? ""}`} />
-      {ayuda && <span className="text-xs text-neutral-500">{ayuda}</span>}
+      {ayuda && <span className="text-xs font-normal text-texto-suave">{ayuda}</span>}
     </label>
   );
 }
 
 export function AreaTexto({ etiqueta, ...props }: ComponentProps<"textarea"> & { etiqueta: string }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex flex-col gap-1.5 text-sm font-medium">
       {etiqueta}
       <textarea rows={3} {...props} className={claseInput} />
     </label>
@@ -30,7 +32,7 @@ export function Selector({
   ...props
 }: ComponentProps<"select"> & { etiqueta: string; children: ReactNode }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex flex-col gap-1.5 text-sm font-medium">
       {etiqueta}
       <select {...props} className={claseInput}>
         {children}
@@ -41,8 +43,8 @@ export function Selector({
 
 export function Casilla({ etiqueta, ...props }: ComponentProps<"input"> & { etiqueta: string }) {
   return (
-    <label className="flex items-center gap-2 text-sm">
-      <input type="checkbox" {...props} />
+    <label className="flex min-h-11 items-center gap-3 text-sm">
+      <input type="checkbox" className="size-5 accent-marca" {...props} />
       {etiqueta}
     </label>
   );
@@ -51,19 +53,10 @@ export function Casilla({ etiqueta, ...props }: ComponentProps<"input"> & { etiq
 export function MensajeError({ children }: { children?: ReactNode }) {
   if (!children) return null;
   return (
-    <p role="alert" className="text-sm text-red-600">
+    <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-peligro">
       {children}
     </p>
   );
 }
 
-export function BotonPrincipal({ children, ...props }: ComponentProps<"button">) {
-  return (
-    <button
-      {...props}
-      className="rounded-md bg-neutral-900 px-4 py-2 font-medium text-white disabled:opacity-60"
-    >
-      {children}
-    </button>
-  );
-}
+export { Boton as BotonPrincipal } from "./ui";

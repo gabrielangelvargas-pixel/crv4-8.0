@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { IconoBuscar } from "@/components/iconos";
+import { Boton, BotonEnlace, EncabezadoPagina, Insignia, TablaResponsiva } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { listarProveedores } from "@/lib/gestion/proveedores";
@@ -12,58 +14,62 @@ export default async function ProveedoresPage({ searchParams }: PageProps<"/admi
   const lista = await listarProveedores(busqueda);
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Proveedores</h1>
-        {tienePermiso(usuario, "proveedores", "crear") && (
-          <Link
-            href="/admin/proveedores/nuevo"
-            className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white"
-          >
-            Nuevo proveedor
-          </Link>
-        )}
-      </div>
-      <form className="flex max-w-md gap-2">
+    <>
+      <EncabezadoPagina
+        titulo="Proveedores"
+        acciones={
+          tienePermiso(usuario, "proveedores", "crear") && (
+            <BotonEnlace href="/admin/proveedores/nuevo">Nuevo proveedor</BotonEnlace>
+          )
+        }
+      />
+      <form className="flex gap-2 sm:max-w-md" role="search">
         <input
           name="q"
           defaultValue={busqueda}
           placeholder="Buscar por nombre o contacto"
-          className="flex-1 rounded-md border border-neutral-300 px-3 py-2 text-base"
+          aria-label="Buscar proveedor"
+          className="min-h-11 min-w-0 flex-1 rounded-lg border border-borde bg-superficie px-3 text-base"
         />
-        <button className="rounded-md border border-neutral-300 px-3 py-2 text-sm">Buscar</button>
+        <Boton variante="secundario" aria-label="Buscar">
+          <IconoBuscar className="size-5" />
+        </Boton>
       </form>
-      {lista.length === 0 ? (
-        <p className="text-neutral-600">{busqueda ? "No hay proveedores que coincidan." : "Todavía no hay proveedores cargados."}</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 text-left">
-                <th className="py-2 pr-4 font-medium">Proveedor</th>
-                <th className="py-2 pr-4 font-medium">Contacto</th>
-                <th className="py-2 pr-4 font-medium">Teléfono</th>
-                <th className="py-2 pr-4 font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map((p) => (
-                <tr key={p.id} className="border-b border-neutral-100">
-                  <td className="py-2 pr-4">
-                    <Link href={`/admin/proveedores/${p.id}`} className="font-medium hover:underline">
-                      {p.nombre}
-                    </Link>
-                    {p.nombreFantasia && <p className="text-neutral-500">{p.nombreFantasia}</p>}
-                  </td>
-                  <td className="py-2 pr-4">{p.contacto}</td>
-                  <td className="py-2 pr-4">{p.telefono}</td>
-                  <td className="py-2 pr-4">{p.activo ? "Activo" : "Inactivo"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
+      <TablaResponsiva
+        filas={lista}
+        clave={(p) => p.id}
+        vacio={busqueda ? "No hay proveedores que coincidan." : "Todavía no hay proveedores cargados."}
+        columnas={[
+          {
+            titulo: "Proveedor",
+            principal: true,
+            celda: (p) => (
+              <>
+                <Link href={`/admin/proveedores/${p.id}`} className="font-medium text-marca hover:underline">
+                  {p.nombre}
+                </Link>
+                {p.nombreFantasia && <p className="font-normal text-texto-suave">{p.nombreFantasia}</p>}
+              </>
+            ),
+          },
+          { titulo: "Contacto", celda: (p) => p.contacto ?? "—" },
+          {
+            titulo: "Teléfono",
+            celda: (p) =>
+              p.telefono ? (
+                <a href={`tel:${p.telefono}`} className="hover:underline">
+                  {p.telefono}
+                </a>
+              ) : (
+                "—"
+              ),
+          },
+          {
+            titulo: "Estado",
+            celda: (p) => <Insignia tono={p.activo ? "exito" : "neutro"}>{p.activo ? "Activo" : "Inactivo"}</Insignia>,
+          },
+        ]}
+      />
+    </>
   );
 }

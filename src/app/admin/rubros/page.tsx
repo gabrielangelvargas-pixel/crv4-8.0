@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotonEnlace, EncabezadoPagina, Insignia, Tarjeta } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { arbolDeRubros, type Rubro } from "@/lib/gestion/rubros";
@@ -7,9 +8,9 @@ export const metadata = { title: "Rubros · CRV4" };
 
 function Etiquetas({ rubro }: { rubro: Rubro }) {
   return (
-    <span className="ml-2 text-xs text-neutral-500">
-      {!rubro.activo && "inactivo · "}
-      {!rubro.visibleWeb && "oculto en la web"}
+    <span className="inline-flex flex-wrap gap-1">
+      {!rubro.activo && <Insignia>Inactivo</Insignia>}
+      {!rubro.visibleWeb && <Insignia tono="alerta">Oculto en la web</Insignia>}
     </span>
   );
 }
@@ -20,47 +21,51 @@ export default async function RubrosPage() {
   const puedeCrear = tienePermiso(usuario, "rubros", "crear");
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Rubros</h1>
-        {puedeCrear && (
-          <Link href="/admin/rubros/nuevo" className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white">
-            Nuevo rubro
-          </Link>
-        )}
-      </div>
-      {arbol.length === 0 && <p className="text-neutral-600">Todavía no hay rubros cargados.</p>}
-      <ul className="flex flex-col gap-3">
+    <>
+      <EncabezadoPagina
+        titulo="Rubros"
+        descripcion="Rubros principales y sus subrubros, en el orden del catálogo."
+        acciones={puedeCrear && <BotonEnlace href="/admin/rubros/nuevo">Nuevo rubro</BotonEnlace>}
+      />
+      {arbol.length === 0 && (
+        <Tarjeta className="text-center text-sm text-texto-suave">Todavía no hay rubros cargados.</Tarjeta>
+      )}
+      <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {arbol.map((rubro) => (
-          <li key={rubro.id} className="rounded-md border border-neutral-200 p-3">
+          <li key={rubro.id} className="rounded-xl border border-borde bg-superficie p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <Link href={`/admin/rubros/${rubro.id}`} className="font-medium hover:underline">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href={`/admin/rubros/${rubro.id}`} className="font-semibold text-marca hover:underline">
                   {rubro.nombre}
                 </Link>
                 <Etiquetas rubro={rubro} />
               </div>
               {puedeCrear && (
-                <Link href={`/admin/rubros/nuevo?padre=${rubro.id}`} className="text-sm underline underline-offset-4">
-                  Agregar subrubro
+                <Link
+                  href={`/admin/rubros/nuevo?padre=${rubro.id}`}
+                  className="inline-flex min-h-11 items-center text-sm text-texto-suave hover:text-marca"
+                >
+                  + Agregar subrubro
                 </Link>
               )}
             </div>
-            {rubro.subrubros.length > 0 && (
-              <ul className="mt-2 flex flex-col gap-1 border-l border-neutral-200 pl-4">
+            {rubro.subrubros.length > 0 ? (
+              <ul className="mt-2 flex flex-col border-l-2 border-borde pl-3">
                 {rubro.subrubros.map((sub) => (
-                  <li key={sub.id} className="text-sm">
-                    <Link href={`/admin/rubros/${sub.id}`} className="hover:underline">
+                  <li key={sub.id} className="flex min-h-10 flex-wrap items-center gap-2 text-sm">
+                    <Link href={`/admin/rubros/${sub.id}`} className="hover:text-marca hover:underline">
                       {sub.nombre}
                     </Link>
                     <Etiquetas rubro={sub} />
                   </li>
                 ))}
               </ul>
+            ) : (
+              <p className="mt-2 text-sm text-texto-suave">Sin subrubros.</p>
             )}
           </li>
         ))}
       </ul>
-    </section>
+    </>
   );
 }

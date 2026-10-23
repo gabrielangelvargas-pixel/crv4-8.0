@@ -11,6 +11,7 @@ const pool =
   mysql.createPool({
     uri: process.env.DATABASE_URL,
     connectionLimit: 10,
+    charset: "utf8mb4",
     timezone: "Z",
   });
 

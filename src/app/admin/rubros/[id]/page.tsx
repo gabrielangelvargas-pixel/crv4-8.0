@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { EncabezadoPagina } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { obtenerRubro, rubrosPrincipales } from "@/lib/gestion/rubros";
@@ -17,8 +18,8 @@ export default async function RubroPage({ params, searchParams }: PageProps<"/ad
   const enUso = (await searchParams)["en-uso"] !== undefined;
 
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">{rubro.nombre}</h1>
+    <>
+      <EncabezadoPagina titulo={rubro.nombre} />
       <RubroForm
         accion={editarRubro.bind(null, rubro.id)}
         principales={principales}
@@ -26,15 +27,15 @@ export default async function RubroPage({ params, searchParams }: PageProps<"/ad
         soloLectura={!tienePermiso(usuario, "rubros", "editar")}
       />
       {tienePermiso(usuario, "rubros", "eliminar") && (
-        <form action={eliminarRubro.bind(null, rubro.id)} className="mt-4 border-t border-neutral-200 pt-4">
+        <form action={eliminarRubro.bind(null, rubro.id)} className="flex flex-col items-start gap-2 rounded-xl border border-red-200 bg-superficie p-4 sm:max-w-2xl">
           {enUso && (
-            <p role="alert" className="mb-2 text-sm text-red-600">
+            <p role="alert" className="text-sm text-peligro">
               No se puede eliminar porque tiene subrubros o productos. Puedes desactivarlo.
             </p>
           )}
-          <button className="text-sm text-red-600 underline underline-offset-4">Eliminar rubro</button>
+          <button className="inline-flex min-h-11 items-center rounded-lg border border-red-200 px-4 text-sm font-medium text-peligro hover:bg-red-50">Eliminar rubro</button>
         </form>
       )}
-    </section>
+    </>
   );
 }

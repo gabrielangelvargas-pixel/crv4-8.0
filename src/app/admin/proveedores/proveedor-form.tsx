@@ -16,7 +16,7 @@ export function ProveedorForm({ accion, inicial, soloLectura = false }: Props) {
   const [estado, enviar, enviando] = useActionState(accion, undefined);
 
   return (
-    <form action={enviar} className="flex max-w-xl flex-col gap-4">
+    <form action={enviar} className="flex flex-col gap-5 rounded-xl border border-borde bg-superficie p-4 sm:max-w-2xl sm:p-6">
       <fieldset disabled={soloLectura} className="flex flex-col gap-4">
         <Campo etiqueta="Razón social" name="nombre" required defaultValue={inicial?.nombre} />
         <Campo etiqueta="Nombre de fantasía" name="nombreFantasia" defaultValue={inicial?.nombreFantasia ?? ""} />
@@ -30,7 +30,7 @@ export function ProveedorForm({ accion, inicial, soloLectura = false }: Props) {
       <MensajeError>{estado?.error}</MensajeError>
       <div className="flex items-center gap-4">
         {!soloLectura && <BotonPrincipal disabled={enviando}>{enviando ? "Guardando…" : "Guardar"}</BotonPrincipal>}
-        <Link href="/admin/proveedores" className="text-sm underline underline-offset-4">
+        <Link href="/admin/proveedores" className="text-sm text-texto-suave hover:text-marca">
           Volver
         </Link>
       </div>
