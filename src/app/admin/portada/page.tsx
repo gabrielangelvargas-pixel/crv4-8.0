@@ -41,7 +41,11 @@ export default async function PortadasPage() {
                     {p.activo ? <Insignia tono="exito">Activa</Insignia> : <Insignia>Oculta</Insignia>}
                   </span>
                 </div>
-                {!p.imagenMovil && <p className="px-3 pb-3 text-xs text-texto-suave">Sin imagen para celular</p>}
+                {!p.imagenMovil && (
+                  <p className="px-3 pb-3 text-xs text-amber-800">
+                    Sin imagen cuadrada: no se ve en el celular mientras otra la tenga.
+                  </p>
+                )}
               </Link>
             </li>
           ))}

@@ -212,7 +212,7 @@ Reglas:
 
 Reglas:
 - Las imágenes se recortan desde el centro al tamaño exacto y se guardan en WEBP en la carpeta de imágenes; cada subida usa un nombre nuevo y borra la anterior.
-- En el celular se usa la cuadrada solo si todas las activas la tienen (para que el slider no cambie de alto).
+- En el celular el slider es cuadrado si al menos una activa tiene imagen cuadrada, y ahí solo se muestran las que la tienen. Si ninguna la tiene, se usa la ancha.
 - Se administra con el permiso `portada`.
 
 ## Para más adelante
