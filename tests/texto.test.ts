@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { slugificar, textoOpcional } from "@/lib/texto";
+import { normalizarTelefono, slugificar, textoOpcional } from "@/lib/texto";
 
 describe("slugificar", () => {
   it("quita acentos, mayúsculas y símbolos", () => {
@@ -14,5 +14,17 @@ describe("textoOpcional", () => {
     expect(textoOpcional("  ")).toBeNull();
     expect(textoOpcional(null)).toBeNull();
     expect(textoOpcional(" hola ")).toBe("hola");
+  });
+});
+
+describe("normalizarTelefono", () => {
+  it("quita espacios y separadores", () => {
+    expect(normalizarTelefono("(011) 15-4567-8901")).toBe("0111545678901");
+    expect(normalizarTelefono("+54 9 351 555.1234")).toBe("+5493515551234");
+  });
+  it("rechaza lo que no es un teléfono", () => {
+    expect(normalizarTelefono("abc")).toBeNull();
+    expect(normalizarTelefono("123")).toBeNull();
+    expect(normalizarTelefono("-")).toBeNull();
   });
 });

@@ -172,6 +172,9 @@ export const variantes = mysqlTable(
 
 export const ORIGENES_CLIENTE = ["web", "presencial"] as const;
 
+// Cliente precargado para las ventas presenciales; no se borra ni se renombra.
+export const CONSUMIDOR_FINAL = "Consumidor final";
+
 // 6. Cliente
 export const clientes = mysqlTable(
   "clientes",

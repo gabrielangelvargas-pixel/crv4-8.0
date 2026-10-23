@@ -6,10 +6,10 @@ import type { MigrationMeta } from "drizzle-orm/migrator";
 import mysql, { type RowDataPacket } from "mysql2/promise";
 // Generado desde drizzle/ por scripts/empaquetar-migraciones.mjs.
 import migracionesJson from "./migraciones.json";
+import { CONSUMIDOR_FINAL } from "./schema";
 
 const migraciones = migracionesJson as MigrationMeta[];
 
-export const CONSUMIDOR_FINAL = "Consumidor final";
 
 // Misma lógica y misma tabla (__drizzle_migrations) que migrate() de drizzle,
 // pero leyendo las migraciones empaquetadas en vez de la carpeta drizzle/.
