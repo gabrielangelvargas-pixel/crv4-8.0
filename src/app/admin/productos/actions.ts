@@ -11,7 +11,8 @@ import { tienePermiso } from "@/lib/auth/permisos";
 import type { UsuarioSesion } from "@/lib/auth/session";
 import { codigosEnUso, obtenerProducto, variantesConHistorial, type ProductoConVariantes } from "@/lib/gestion/productos";
 import { obtenerRubro } from "@/lib/gestion/rubros";
-import { borrarImagen, ErrorImagen, guardarImagenProducto, renombrarImagen } from "@/lib/imagenes";
+import { borrarImagen, ErrorImagen, guardarImagenProducto, moverImagen } from "@/lib/imagenes";
+import { rutaFotoProducto } from "@/lib/rutas-imagen";
 import { textoOpcional } from "@/lib/texto";
 import { validarVariantes, type VarianteValidada } from "./datos";
 
@@ -29,7 +30,7 @@ const datosProducto = z.object({
 });
 
 type Lectura =
-  | { ok: true; producto: z.infer<typeof datosProducto>; variantes: VarianteValidada[] }
+  | { ok: true; producto: z.infer<typeof datosProducto>; variantes: VarianteValidada[]; rubroSlug: string }
   | { ok: false; error: string };
 
 // El costo solo lo ve quien tiene acceso total; el proveedor, quien puede ver proveedores.
@@ -69,7 +70,7 @@ async function leerFormulario(form: FormData, usuario: UsuarioSesion, actual?: P
   );
   if (enUso.length) return { ok: false, error: `El código ${enUso[0]} ya lo usa otro producto` };
 
-  return { ok: true, producto: datos.data, variantes: lista.variantes };
+  return { ok: true, producto: datos.data, variantes: lista.variantes, rubroSlug: rubro.slug };
 }
 
 function filaVariante(v: VarianteValidada) {
@@ -94,25 +95,27 @@ function archivoSubido(form: FormData): File | null {
 const codigoPrincipal = (variantesValidadas: VarianteValidada[]) =>
   (variantesValidadas.find((v) => v.esPrincipal) ?? variantesValidadas[0]).codigo;
 
-// La foto se guarda con el código de la variante principal: "7790895000997.webp".
+// La foto va en la carpeta del rubro con el código de la variante principal:
+// "productos/vasos/7790895000997.webp".
 async function resolverImagen(
   form: FormData,
   variantesValidadas: VarianteValidada[],
+  rubroSlug: string,
   anterior: string | null,
 ): Promise<{ ok: true; imagen: string | null } | { ok: false; error: string }> {
-  const codigo = codigoPrincipal(variantesValidadas);
+  const ruta = rutaFotoProducto(rubroSlug, codigoPrincipal(variantesValidadas));
   const archivo = archivoSubido(form);
   try {
     if (archivo) {
-      const nombre = await guardarImagenProducto(archivo, codigo);
-      if (anterior && anterior !== nombre) await borrarImagen(anterior);
-      return { ok: true, imagen: nombre };
+      await guardarImagenProducto(archivo, ruta);
+      if (anterior && anterior !== ruta) await borrarImagen(anterior);
+      return { ok: true, imagen: ruta };
     }
     if (form.get("quitarImagen") === "on") {
       await borrarImagen(anterior);
       return { ok: true, imagen: null };
     }
-    return { ok: true, imagen: anterior ? await renombrarImagen(anterior, codigo) : null };
+    return { ok: true, imagen: anterior ? await moverImagen(anterior, ruta) : null };
   } catch (error) {
     if (error instanceof ErrorImagen) return { ok: false, error: error.message };
     throw error;
@@ -123,7 +126,7 @@ export async function crearProducto(_prev: EstadoFormulario, form: FormData): Pr
   const usuario = await requerirPermiso("productos", "crear");
   const datos = await leerFormulario(form, usuario);
   if (!datos.ok) return { error: datos.error };
-  const imagen = await resolverImagen(form, datos.variantes, null);
+  const imagen = await resolverImagen(form, datos.variantes, datos.rubroSlug, null);
   if (!imagen.ok) return { error: imagen.error };
 
   await db.transaction(async (tx) => {
@@ -152,7 +155,7 @@ export async function editarProducto(
     const nombre = quitadas.find((v) => v.id === conHistorial[0])?.valor;
     return { error: `La variante ${nombre} ya tiene ventas o movimientos de stock: desactívala en vez de quitarla` };
   }
-  const imagen = await resolverImagen(form, datos.variantes, actual.imagen);
+  const imagen = await resolverImagen(form, datos.variantes, datos.rubroSlug, actual.imagen);
   if (!imagen.ok) return { error: imagen.error };
 
   await db.transaction(async (tx) => {

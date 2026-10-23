@@ -1,13 +1,15 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { rubros } from "@/db/schema";
+import { productos, rubros } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { obtenerRubro, slugEnUso, usoDelRubro } from "@/lib/gestion/rubros";
+import { moverImagen } from "@/lib/imagenes";
+import { rutaFotoProducto } from "@/lib/rutas-imagen";
 import { slugificar, textoOpcional } from "@/lib/texto";
 
 export type EstadoFormulario = { error?: string } | undefined;
@@ -78,7 +80,8 @@ export async function editarRubro(
   form: FormData,
 ): Promise<EstadoFormulario> {
   await requerirPermiso("rubros", "editar");
-  if (!(await obtenerRubro(id))) return { error: "El rubro no existe" };
+  const actual = await obtenerRubro(id);
+  if (!actual) return { error: "El rubro no existe" };
   const datos = leerFormulario(form);
   if (!datos.success) return { error: datos.error.issues[0]?.message ?? "Datos inválidos" };
   const errorPadre = await validarPadre(datos.data.rubroPadreId, id);
@@ -92,8 +95,23 @@ export async function editarRubro(
     if (mensaje) return { error: mensaje };
     throw error;
   }
+  if (datos.data.slug !== actual.slug) await moverFotosDelRubro(id, datos.data.slug);
   revalidatePath("/admin/rubros");
   redirect("/admin/rubros");
+}
+
+// Las fotos están en una carpeta con la dirección web del rubro: si cambia, se mueven.
+async function moverFotosDelRubro(id: number, slug: string): Promise<void> {
+  const conFoto = await db
+    .select({ id: productos.id, imagen: productos.imagen })
+    .from(productos)
+    .where(and(eq(productos.rubroId, id), isNotNull(productos.imagen)));
+  for (const p of conFoto) {
+    const archivo = p.imagen!.split("/").pop()!;
+    const nueva = await moverImagen(p.imagen!, rutaFotoProducto(slug, archivo.replace(/\.webp$/, "")));
+    if (nueva !== p.imagen) await db.update(productos).set({ imagen: nueva }).where(eq(productos.id, p.id));
+  }
+  if (conFoto.length) revalidatePath("/admin/productos");
 }
 
 export async function eliminarRubro(id: number): Promise<void> {
