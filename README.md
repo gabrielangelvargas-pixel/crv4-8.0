@@ -31,6 +31,7 @@ src/
   proxy.ts        redirige a /login si no hay sesión en zonas privadas
 drizzle/          migraciones SQL generadas
 src/db/migrar.ts     aplica migraciones y crea datos iniciales (al arrancar)
+src/db/migraciones.json  copia de drizzle/ que viaja en el build (generada)
 docs/             diseño de entidades
 tests/            tests unitarios
 ```

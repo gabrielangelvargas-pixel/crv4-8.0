@@ -1,28 +1,48 @@
 // Aplica las migraciones pendientes y crea los datos iniciales.
 // Es seguro ejecutarlo varias veces. Lo llama src/instrumentation.ts al
 // arrancar el servidor y `npm run db:migrate` desde la terminal.
-import { existsSync } from "node:fs";
-import path from "node:path";
 import bcrypt from "bcryptjs";
-import { drizzle } from "drizzle-orm/mysql2";
-import { migrate } from "drizzle-orm/mysql2/migrator";
+import type { MigrationMeta } from "drizzle-orm/migrator";
 import mysql, { type RowDataPacket } from "mysql2/promise";
+// Generado desde drizzle/ por scripts/empaquetar-migraciones.mjs.
+import migracionesJson from "./migraciones.json";
+
+const migraciones = migracionesJson as MigrationMeta[];
 
 export const CONSUMIDOR_FINAL = "Consumidor final";
+
+// Misma lógica y misma tabla (__drizzle_migrations) que migrate() de drizzle,
+// pero leyendo las migraciones empaquetadas en vez de la carpeta drizzle/.
+async function aplicarMigraciones(conn: mysql.Connection): Promise<void> {
+  await conn.query(
+    "CREATE TABLE IF NOT EXISTS `__drizzle_migrations` (id serial primary key, hash text not null, created_at bigint)",
+  );
+  const [filas] = await conn.query<RowDataPacket[]>(
+    "SELECT created_at FROM `__drizzle_migrations` ORDER BY created_at DESC LIMIT 1",
+  );
+  const ultima = filas.length > 0 ? Number(filas[0].created_at) : -1;
+
+  for (const migracion of migraciones) {
+    if (migracion.folderMillis <= ultima) continue;
+    for (const sentencia of migracion.sql) {
+      if (sentencia.trim()) await conn.query(sentencia);
+    }
+    await conn.query("INSERT INTO `__drizzle_migrations` (hash, created_at) VALUES (?, ?)", [
+      migracion.hash,
+      migracion.folderMillis,
+    ]);
+    console.log(`[migrar] Migración ${migracion.folderMillis} aplicada`);
+  }
+}
 
 export async function migrar(): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("Falta la variable DATABASE_URL");
 
-  const migrationsFolder = path.join(process.cwd(), "drizzle");
-  if (!existsSync(migrationsFolder)) {
-    throw new Error(`No se encontró la carpeta de migraciones en ${migrationsFolder}`);
-  }
-
   const conn = await mysql.createConnection({ uri: url, timezone: "Z" });
   try {
-    await migrate(drizzle(conn), { migrationsFolder });
-    console.log("[migrar] Migraciones aplicadas");
+    await aplicarMigraciones(conn);
+    console.log("[migrar] Base de datos al día");
 
     const [clientes] = await conn.query<RowDataPacket[]>(
       "SELECT id FROM clientes WHERE nombre = ? LIMIT 1",
