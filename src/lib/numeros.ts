@@ -34,3 +34,19 @@ export function importeParaCampo(valor: string | null | undefined): string {
   if (valor === null || valor === undefined) return "";
   return Number(valor).toFixed(2).replace(".", ",");
 }
+
+// Cantidad con signo para un historial: "+2,5" o "−3".
+export function formatearCantidadConSigno(valor: string | number): string {
+  const n = Number(valor);
+  return `${n > 0 ? "+" : n < 0 ? "−" : ""}${formatoCantidad.format(Math.abs(n))}`;
+}
+
+const formatoFecha = new Intl.DateTimeFormat("es-AR", {
+  dateStyle: "short",
+  timeStyle: "short",
+  timeZone: "America/Argentina/Buenos_Aires",
+});
+
+export function formatearFecha(fecha: Date): string {
+  return formatoFecha.format(fecha);
+}
