@@ -57,13 +57,13 @@ export async function migrar(): Promise<void> {
     }
 
     const [admins] = await conn.query<RowDataPacket[]>(
-      "SELECT id FROM usuarios WHERE rol = 'admin' LIMIT 1",
+      "SELECT u.id FROM usuarios u JOIN roles r ON r.id = u.rol_id WHERE r.codigo = 'admin' LIMIT 1",
     );
     const usuario = process.env.SEED_ADMIN_USUARIO;
     const password = process.env.SEED_ADMIN_PASSWORD;
     if (admins.length === 0 && usuario && password) {
       await conn.query(
-        "INSERT INTO usuarios (nombre_usuario, password_hash, nombre, rol) VALUES (?, ?, ?, 'admin')",
+        "INSERT INTO usuarios (nombre_usuario, password_hash, nombre, rol_id) SELECT ?, ?, ?, id FROM roles WHERE codigo = 'admin'",
         [usuario, await bcrypt.hash(password, 12), "Administrador"],
       );
       console.log(`[migrar] Administrador "${usuario}" creado`);

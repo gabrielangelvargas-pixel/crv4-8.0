@@ -2,6 +2,7 @@
 // Refleja docs/entidades.md. Los importes y cantidades se guardan como DECIMAL
 // y Drizzle los devuelve como string para no perder precisión.
 import { relations, sql } from "drizzle-orm";
+import { ACCIONES, MODULOS } from "@/lib/auth/permisos-catalogo";
 import {
   type AnyMySqlColumn,
   boolean,
@@ -12,6 +13,7 @@ import {
   int,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   uniqueIndex,
   varchar,
@@ -30,8 +32,33 @@ const timestamps = {
 const importe = (name: string) => decimal(name, { precision: 12, scale: 2 });
 const cantidad = (name: string) => decimal(name, { precision: 12, scale: 3 });
 
-export const ROLES = ["admin", "vendedor", "cliente"] as const;
-export type Rol = (typeof ROLES)[number];
+export const CODIGOS_ROL = ["admin", "cliente"] as const;
+export type CodigoRol = (typeof CODIGOS_ROL)[number];
+
+// 11. Rol. `codigo` identifica los roles del sistema (no se borran).
+export const roles = mysqlTable("roles", {
+  id: int("id").autoincrement().primaryKey(),
+  codigo: mysqlEnum("codigo", CODIGOS_ROL).unique(),
+  nombre: varchar("nombre", { length: 60 }).notNull().unique(),
+  descripcion: varchar("descripcion", { length: 255 }),
+  accesoTotal: boolean("acceso_total").notNull().default(false),
+  accesoGestion: boolean("acceso_gestion").notNull().default(true),
+  activo: boolean("activo").notNull().default(true),
+  ...timestamps,
+});
+
+// 12. Permisos de cada rol: combinación de módulo y acción.
+export const rolPermisos = mysqlTable(
+  "rol_permisos",
+  {
+    rolId: int("rol_id")
+      .notNull()
+      .references(() => roles.id, { onDelete: "cascade" }),
+    modulo: mysqlEnum("modulo", MODULOS).notNull(),
+    accion: mysqlEnum("accion", ACCIONES).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.rolId, t.modulo, t.accion] })],
+);
 
 // 1. Usuario
 export const usuarios = mysqlTable("usuarios", {
@@ -39,7 +66,9 @@ export const usuarios = mysqlTable("usuarios", {
   nombreUsuario: varchar("nombre_usuario", { length: 60 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 100 }),
   nombre: varchar("nombre", { length: 120 }).notNull(),
-  rol: mysqlEnum("rol", ROLES).notNull(),
+  rolId: int("rol_id")
+    .notNull()
+    .references(() => roles.id),
   activo: boolean("activo").notNull().default(true),
   clienteId: int("cliente_id").references((): AnyMySqlColumn => clientes.id),
   ultimoAcceso: datetime("ultimo_acceso", { mode: "date" }),
@@ -262,7 +291,17 @@ export const movimientosStock = mysqlTable(
 );
 
 // Relaciones (para consultas con `db.query`)
+export const rolesRelations = relations(roles, ({ many }) => ({
+  permisos: many(rolPermisos),
+  usuarios: many(usuarios),
+}));
+
+export const rolPermisosRelations = relations(rolPermisos, ({ one }) => ({
+  rol: one(roles, { fields: [rolPermisos.rolId], references: [roles.id] }),
+}));
+
 export const usuariosRelations = relations(usuarios, ({ one }) => ({
+  rol: one(roles, { fields: [usuarios.rolId], references: [roles.id] }),
   cliente: one(clientes, { fields: [usuarios.clienteId], references: [clientes.id] }),
 }));
 

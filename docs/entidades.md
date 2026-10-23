@@ -10,7 +10,7 @@ Base de datos prevista: MySQL (Hostinger). Todas las tablas llevan `creado_en` y
 | nombre_usuario | texto, único | se usa para el login |
 | password_hash | texto, opcional | contraseña con hash bcrypt; el cliente la define al confirmar su primer pedido |
 | nombre | texto | nombre visible |
-| rol | admin / vendedor / cliente | un solo rol por usuario |
+| rol_id | FK a Rol | un solo rol por usuario |
 | activo | booleano | bloquear sin borrar |
 | cliente_id | FK a Cliente, opcional | solo para rol cliente |
 | ultimo_acceso | fecha y hora | |
