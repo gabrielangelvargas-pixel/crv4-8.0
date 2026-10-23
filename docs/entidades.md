@@ -171,6 +171,11 @@ Reglas del pedido:
 - El catálogo público no muestra cantidades: solo "Disponible" o "Sin stock". Si no hay disponible, no se puede agregar al carrito.
 - Las ventas presenciales son Pedidos con canal = presencial (no hay entidad Venta aparte).
 - Existe un Cliente fijo "Consumidor final" que se precarga al abrir una venta presencial; antes de confirmarla se puede cambiar por un cliente existente o dar de alta uno nuevo, para que quede en su historial.
+- Estados: un pedido avanza (puede saltear pasos) o se cancela. Al pasar a entregado descuenta el stock (movimiento entrega_pedido).
+- Una venta entregada se puede anular (pasa a cancelado y devuelve el stock con movimientos devolucion); requiere el permiso de eliminar pedidos.
+- Los precios y costos de los renglones se toman de la base al registrar la venta, nunca del navegador. El precio aplicado es el de oferta si hay.
+- El adicional se puede cambiar mientras el pedido no esté entregado ni cancelado; el total se recalcula.
+- Solo se elimina definitivamente un pedido que nunca movió stock.
 - Pagos y medios de pago: más adelante.
 
 ## 10. MovimientoStock (cerrada, v1)
