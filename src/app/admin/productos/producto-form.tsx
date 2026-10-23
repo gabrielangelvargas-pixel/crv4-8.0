@@ -29,6 +29,7 @@ type Props = {
   verCosto: boolean;
   inicial?: ProductoInicial;
   variantesIniciales?: (VarianteFormulario & { stock?: string })[];
+  imagenActual?: string | null;
   soloLectura?: boolean;
 };
 
@@ -62,6 +63,7 @@ export function ProductoForm({
   verCosto,
   inicial,
   variantesIniciales,
+  imagenActual = null,
   soloLectura = false,
 }: Props) {
   const [estado, enviar, enviando] = useActionState(accion, undefined);
@@ -71,6 +73,10 @@ export function ProductoForm({
       ? variantesIniciales.map((v) => ({ ...v, clave: siguienteClave++ }))
       : [filaVacia(true)],
   );
+
+  const [vistaPrevia, setVistaPrevia] = useState<string | null>(null);
+  const [quitarImagen, setQuitarImagen] = useState(false);
+  const imagenMostrada = vistaPrevia ?? (quitarImagen ? null : imagenActual);
 
   const conVariantes = tipo !== "ninguna";
   const [etiquetaValor, ejemploValor] = conVariantes ? ETIQUETA_VALOR[tipo] : ["", ""];
@@ -159,6 +165,43 @@ export function ProductoForm({
             <Casilla etiqueta="Visible en el catálogo web" name="visibleWeb" defaultChecked={inicial?.visibleWeb ?? true} />
             <Casilla etiqueta="Destacado en la portada" name="destacado" defaultChecked={inicial?.destacado ?? false} />
             <Casilla etiqueta="Activo" name="activo" defaultChecked={inicial?.activo ?? true} />
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-4 rounded-xl border border-borde bg-superficie p-4 sm:flex-row sm:items-center sm:p-6 lg:max-w-4xl">
+          <div className="flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-borde bg-white">
+            {imagenMostrada ? (
+              // eslint-disable-next-line @next/next/no-img-element -- vista previa local o foto ya optimizada
+              <img src={imagenMostrada} alt="Foto del producto" className="size-full object-contain" />
+            ) : (
+              <span className="px-2 text-center text-xs text-texto-suave">Sin foto</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <h2 className="font-semibold">Foto</h2>
+            <input
+              type="file"
+              name="imagen"
+              accept="image/*"
+              aria-label="Elegir foto"
+              onChange={(e) => {
+                const archivo = e.target.files?.[0];
+                setVistaPrevia(archivo ? URL.createObjectURL(archivo) : null);
+                if (archivo) setQuitarImagen(false);
+              }}
+              className="text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border file:border-borde file:bg-superficie file:px-4 file:text-sm file:font-medium hover:file:bg-fondo"
+            />
+            <p className="text-xs text-texto-suave">
+              Se ajusta a 500×500 y se guarda en WEBP con el código de la variante principal.
+            </p>
+            {imagenActual && !vistaPrevia && (
+              <Casilla
+                etiqueta="Quitar la foto"
+                name="quitarImagen"
+                checked={quitarImagen}
+                onChange={(e) => setQuitarImagen(e.target.checked)}
+              />
+            )}
           </div>
         </section>
 

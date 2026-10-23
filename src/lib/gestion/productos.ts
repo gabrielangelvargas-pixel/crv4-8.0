@@ -45,6 +45,8 @@ export async function listarProductos(filtro: FiltroProductos) {
       activo: productos.activo,
       visibleWeb: productos.visibleWeb,
       destacado: productos.destacado,
+      imagen: productos.imagen,
+      actualizadoEn: productos.actualizadoEn,
       rubro: rubros.nombre,
       rubroPadre: padre.nombre,
       variantes: sql<number>`(select count(*) from ${variantes} where ${variantes.productoId} = ${productos.id})`,
