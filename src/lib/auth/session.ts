@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, ne } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { db } from "@/db";
 import { rolPermisos, roles, sesiones, usuarios, type CodigoRol } from "@/db/schema";
@@ -91,4 +91,13 @@ export async function cerrarSesion(): Promise<void> {
   const token = store.get(COOKIE_SESION)?.value;
   if (token) await db.delete(sesiones).where(eq(sesiones.id, hashToken(token)));
   store.delete(COOKIE_SESION);
+}
+
+// Al cambiar la contraseña se cierran las sesiones abiertas en otros dispositivos.
+// Con `conservarActual` sigue abierta la del navegador que hizo el cambio.
+export async function cerrarSesionesDe(usuarioId: number, conservarActual = false): Promise<void> {
+  const token = conservarActual ? (await cookies()).get(COOKIE_SESION)?.value : undefined;
+  await db
+    .delete(sesiones)
+    .where(and(eq(sesiones.usuarioId, usuarioId), token ? ne(sesiones.id, hashToken(token)) : undefined));
 }
