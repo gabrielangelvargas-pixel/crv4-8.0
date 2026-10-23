@@ -62,14 +62,14 @@ export async function guardarImagenPortada(archivo: File, formato: FormatoPortad
   return ruta;
 }
 
-// La del aviso emergente conserva su forma: solo se achica para que entre en 1080 × 1080.
+// La del aviso emergente conserva su forma: solo se achica para que entre en 1080 × 1350 (4:5).
 export async function guardarImagenAviso(archivo: File): Promise<string> {
   if (archivo.size > TAMANO_MAXIMO) throw new ErrorImagen("La imagen pesa más de 7 MB");
   let datos: Buffer;
   try {
     datos = await sharp(Buffer.from(await archivo.arrayBuffer()))
       .rotate()
-      .resize(1080, 1080, { fit: "inside", withoutEnlargement: true })
+      .resize(1080, 1350, { fit: "inside", withoutEnlargement: true })
       .flatten({ background: "#ffffff" })
       .webp({ quality: 82 })
       .toBuffer();

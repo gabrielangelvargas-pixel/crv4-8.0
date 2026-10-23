@@ -126,7 +126,7 @@ export function AvisoForm({ accion, inicial, soloLectura = false }: { accion: Ac
           </div>
           <div className="flex flex-col gap-2 text-sm">
             <span className="font-medium">Imagen (opcional)</span>
-            <span className="text-texto-suave">Cualquier forma; ideal cuadrada o vertical, hasta 1080 píxeles. Se muestra completa, sin recortar.</span>
+            <span className="text-texto-suave">Ideal vertical 4:5, de 1080 × 1350 píxeles: así ocupa todo el ancho del aviso en celular y en compu. Se muestra completa, sin recortar. Si la imagen ya dice todo, deja vacíos el título y el texto.</span>
             <input
               type="file"
               name="imagen"

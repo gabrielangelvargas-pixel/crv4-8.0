@@ -49,6 +49,8 @@ export function AvisoEmergente({ clave, frecuencia, titulo, texto, imagen, boton
     if (yaVisto(clave, frecuencia)) return;
     const espera = setTimeout(() => {
       dialogo.current?.showModal();
+      // El foco va a la ventana y no a la ×, para que no aparezca el borde de foco al abrirse.
+      dialogo.current?.focus();
       marcarVisto(clave, frecuencia);
     }, 800);
     return () => clearTimeout(espera);
@@ -57,12 +59,14 @@ export function AvisoEmergente({ clave, frecuencia, titulo, texto, imagen, boton
   const cerrar = () => dialogo.current?.close();
   const foto = imagen && (
     // eslint-disable-next-line @next/next/no-img-element -- la imagen ya está optimizada
-    <img src={imagen} alt={titulo ?? ""} className="max-h-[60vh] w-full object-contain" />
+    <img src={imagen} alt={titulo ?? ""} className="block h-auto max-h-[85dvh] w-full object-contain" />
   );
 
   return (
     <dialog
       ref={dialogo}
+      tabIndex={-1}
+      style={{ outline: "none" }}
       aria-label={titulo ?? "Aviso"}
       onClick={(e) => e.target === e.currentTarget && cerrar()}
       className="m-auto w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl bg-superficie p-0 text-texto shadow-2xl backdrop:bg-black/50"
