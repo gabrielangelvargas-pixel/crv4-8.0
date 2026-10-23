@@ -12,7 +12,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Idioma del código de dominio y la interfaz: español (tablas, columnas, rutas, textos).
 - Diseño de datos: `docs/entidades.md`. Si cambias `src/db/schema.ts`, actualiza ese documento y genera la migración con `npm run db:generate` (también regenera `src/db/migraciones.json`, que se commitea: Hostinger publica solo el build, sin la carpeta `drizzle/`).
-- Toda página o Server Action privada debe llamar a `requerirRol()` de `src/lib/auth/dal.ts`.
+- Toda página o Server Action de gestión debe llamar a `requerirPermiso(modulo, accion)` (o `requerirGestion()` / `requerirCliente()`) de `src/lib/auth/dal.ts`. El catálogo de módulos y acciones está en `src/lib/auth/permisos-catalogo.ts`; qué rol tiene cada uno se guarda en `rol_permisos`.
 - `cacheComponents` está desactivado a propósito para mantener el modelo de renderizado simple.
 - Se compila con Webpack (`next build --webpack`): Turbopack falla en el build de Hostinger al procesar el CSS.
 - Antes de subir cambios: `npm run typecheck && npm run lint && npm test && npm run build`.

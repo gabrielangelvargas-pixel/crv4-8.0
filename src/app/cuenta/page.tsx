@@ -1,10 +1,10 @@
 import { BotonSalir } from "@/components/boton-salir";
-import { requerirRol } from "@/lib/auth/dal";
+import { requerirCliente } from "@/lib/auth/dal";
 
 export const metadata = { title: "Mi cuenta · CRV4" };
 
 export default async function CuentaPage() {
-  const usuario = await requerirRol("cliente");
+  const usuario = await requerirCliente();
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">

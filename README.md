@@ -57,10 +57,10 @@ Comandos útiles:
 
 ## Seguridad y roles
 
-- Toda página o acción privada llama a `requerirRol(...)` (`src/lib/auth/dal.ts`); el `proxy.ts` es solo un primer filtro.
+- Roles configurables con permisos por módulo (rubros, proveedores, productos, stock, clientes, pedidos, usuarios, roles) y acción (ver, crear, editar, eliminar), en Gestión → Roles y permisos. El Administrador tiene acceso total; el rol Cliente no entra a gestión.
+- Toda página o acción privada llama a `requerirPermiso(...)` (`src/lib/auth/dal.ts`); el `proxy.ts` es solo un primer filtro.
 - La cookie guarda un token aleatorio; la base guarda solo su hash SHA-256.
 - Sesión de clientes: 1 año (queda logueado). Sesión de admin y vendedor: 7 días.
-- El vendedor no ve rubros, proveedores, stock ni usuarios (`src/app/admin/menu.ts`).
 
 ## Despliegue en Hostinger
 

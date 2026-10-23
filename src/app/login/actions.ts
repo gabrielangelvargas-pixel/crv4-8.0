@@ -4,9 +4,9 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { usuarios } from "@/db/schema";
+import { roles, usuarios } from "@/db/schema";
 import { verificarPassword } from "@/lib/auth/password";
-import { destinoSeguro, inicioSegunRol } from "@/lib/auth/roles";
+import { destinoSeguro, inicioSegun } from "@/lib/auth/roles";
 import { cerrarSesion, crearSesion } from "@/lib/auth/session";
 
 // Se devuelve el usuario tipeado para no borrarlo si el login falla.
@@ -28,19 +28,27 @@ export async function iniciarSesion(_prev: EstadoLogin, form: FormData): Promise
   if (!datos.success) return { error: "Completa usuario y contraseña", nombreUsuario };
 
   const [usuario] = await db
-    .select()
+    .select({
+      id: usuarios.id,
+      activo: usuarios.activo,
+      passwordHash: usuarios.passwordHash,
+      rolActivo: roles.activo,
+      accesoGestion: roles.accesoGestion,
+    })
     .from(usuarios)
+    .innerJoin(roles, eq(usuarios.rolId, roles.id))
     .where(eq(usuarios.nombreUsuario, datos.data.nombreUsuario))
     .limit(1);
 
   const valido =
     usuario?.activo &&
+    usuario.rolActivo &&
     usuario.passwordHash &&
     (await verificarPassword(datos.data.password, usuario.passwordHash));
   if (!usuario || !valido) return { error: ERROR_GENERICO, nombreUsuario };
 
-  await crearSesion(usuario.id, usuario.rol);
-  redirect(destinoSeguro(form.get("next")) ?? inicioSegunRol(usuario.rol));
+  await crearSesion(usuario.id, usuario.accesoGestion);
+  redirect(destinoSeguro(form.get("next")) ?? inicioSegun(usuario.accesoGestion));
 }
 
 export async function salir(): Promise<void> {

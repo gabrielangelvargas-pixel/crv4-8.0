@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE_SESION } from "@/lib/auth/roles";
 
 // Chequeo rápido: sin cookie de sesión no se entra a las zonas privadas.
-// La validación real (sesión vigente y rol) la hace requerirRol() en cada página.
+// La validación real (sesión vigente y permisos) la hacen las funciones de
+// src/lib/auth/dal.ts en cada página.
 export function proxy(request: NextRequest) {
   if (request.cookies.has(COOKIE_SESION)) return NextResponse.next();
 
