@@ -15,6 +15,13 @@
       "when": 1792714626445,
       "tag": "0001_roles_y_permisos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1792758178046,
+      "tag": "0002_portadas",
+      "breakpoints": true
     }
   ]
 }

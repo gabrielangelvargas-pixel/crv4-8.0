@@ -293,6 +293,18 @@ export const movimientosStock = mysqlTable(
   (t) => [index("movimientos_variante_idx").on(t.varianteId)],
 );
 
+// 13. Portada: imágenes del slider del inicio de la web.
+export const portadas = mysqlTable("portadas", {
+  id: int("id").autoincrement().primaryKey(),
+  titulo: varchar("titulo", { length: 120 }),
+  enlace: varchar("enlace", { length: 255 }),
+  imagenEscritorio: varchar("imagen_escritorio", { length: 255 }).notNull(),
+  imagenMovil: varchar("imagen_movil", { length: 255 }),
+  orden: int("orden").notNull().default(0),
+  activo: boolean("activo").notNull().default(true),
+  ...timestamps,
+});
+
 // Relaciones (para consultas con `db.query`)
 export const rolesRelations = relations(roles, ({ many }) => ({
   permisos: many(rolPermisos),

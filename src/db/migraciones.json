@@ -56,5 +56,14 @@
     "bps": true,
     "folderMillis": 1792714626445,
     "hash": "a9dcd1699e440156eb92d4bd22c46b1eac9e79163721b758289704ca2416d411"
+  },
+  {
+    "sql": [
+      "CREATE TABLE `portadas` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`titulo` varchar(120),\n\t`enlace` varchar(255),\n\t`imagen_escritorio` varchar(255) NOT NULL,\n\t`imagen_movil` varchar(255),\n\t`orden` int NOT NULL DEFAULT 0,\n\t`activo` boolean NOT NULL DEFAULT true,\n\t`creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\tCONSTRAINT `portadas_id` PRIMARY KEY(`id`)\n);\n",
+      "\nALTER TABLE `rol_permisos` MODIFY COLUMN `modulo` enum('rubros','proveedores','productos','stock','clientes','pedidos','usuarios','roles','portada') NOT NULL;"
+    ],
+    "bps": true,
+    "folderMillis": 1792758178046,
+    "hash": "7eade28e40b7a50bc81cbfb7e3274144ddcd5af3141978d6bff42aef5c63d3f3"
   }
 ]
