@@ -34,6 +34,9 @@ function condicionFiltro({ busqueda, rubroId }: FiltroProductos): SQL | undefine
   return condiciones.length ? and(...condiciones) : undefined;
 }
 
+// Código de la variante principal: con él se identifica y se ordena el producto.
+const codigoPrincipal = sql<string | null>`(select ${variantes.codigo} from ${variantes} where ${variantes.productoId} = ${productos.id} order by ${variantes.esPrincipal} desc, ${variantes.orden}, ${variantes.id} limit 1)`;
+
 export async function listarProductos(filtro: FiltroProductos) {
   const pagina = Math.max(1, filtro.pagina ?? 1);
   const where = condicionFiltro(filtro);
@@ -51,14 +54,14 @@ export async function listarProductos(filtro: FiltroProductos) {
       rubroPadre: padre.nombre,
       variantes: sql<number>`(select count(*) from ${variantes} where ${variantes.productoId} = ${productos.id})`,
       stock: sql<string>`(select coalesce(sum(${variantes.stockActual}), 0) from ${variantes} where ${variantes.productoId} = ${productos.id})`,
-      codigo: sql<string | null>`(select ${variantes.codigo} from ${variantes} where ${variantes.productoId} = ${productos.id} order by ${variantes.esPrincipal} desc, ${variantes.orden}, ${variantes.id} limit 1)`,
+      codigo: codigoPrincipal,
       precioVenta: sql<string | null>`(select ${variantes.precioVenta} from ${variantes} where ${variantes.productoId} = ${productos.id} order by ${variantes.esPrincipal} desc, ${variantes.orden}, ${variantes.id} limit 1)`,
     })
     .from(productos)
     .innerJoin(rubros, eq(rubros.id, productos.rubroId))
     .leftJoin(padre, eq(padre.id, rubros.rubroPadreId))
     .where(where)
-    .orderBy(asc(productos.nombre))
+    .orderBy(asc(codigoPrincipal), asc(productos.id))
     .limit(PRODUCTOS_POR_PAGINA)
     .offset((pagina - 1) * PRODUCTOS_POR_PAGINA);
 
