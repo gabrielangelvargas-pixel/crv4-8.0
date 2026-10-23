@@ -254,7 +254,7 @@ Una sola fila (id = 1); si no existe, no hay aviso.
 | id | entero, PK | siempre 1 |
 | titulo | texto, opcional | hasta 80 letras |
 | texto | texto, opcional | hasta 300 letras; Enter corta la línea |
-| imagen | texto, opcional | `portadas/<único>-aviso.webp`, se achica hasta 1080 × 1080 sin recortar |
+| imagen | texto, opcional | `portadas/<único>-aviso.webp`, se achica hasta 1080 × 1350 sin recortar (ideal 4:5) |
 | boton_texto | texto, opcional | necesita enlace |
 | enlace | texto, opcional | página de la web o `https://...`; sin botón, se abre al tocar la imagen |
 | desde / hasta | fecha, opcional | fuera de ese rango no aparece (fecha de Argentina) |
