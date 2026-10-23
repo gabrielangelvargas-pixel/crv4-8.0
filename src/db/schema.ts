@@ -305,6 +305,17 @@ export const portadas = mysqlTable("portadas", {
   ...timestamps,
 });
 
+// 14. Bloques de información debajo del slider (ícono, título y texto).
+export const portadaBloques = mysqlTable("portada_bloques", {
+  id: int("id").autoincrement().primaryKey(),
+  icono: varchar("icono", { length: 30 }).notNull(),
+  titulo: varchar("titulo", { length: 60 }).notNull(),
+  texto: varchar("texto", { length: 160 }),
+  orden: int("orden").notNull().default(0),
+  activo: boolean("activo").notNull().default(true),
+  ...timestamps,
+});
+
 // Relaciones (para consultas con `db.query`)
 export const rolesRelations = relations(roles, ({ many }) => ({
   permisos: many(rolPermisos),

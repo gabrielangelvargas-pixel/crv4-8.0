@@ -22,6 +22,13 @@
       "when": 1792758178046,
       "tag": "0002_portadas",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1792763901268,
+      "tag": "0003_portada_bloques",
+      "breakpoints": true
     }
   ]
 }

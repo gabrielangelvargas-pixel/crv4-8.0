@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { BotonEnlace, Tarjeta } from "@/components/ui";
+import { BotonEnlace } from "@/components/ui";
 import { usuarioActual } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { listarCatalogo } from "@/lib/catalogo";
-import { portadasActivas } from "@/lib/gestion/portadas";
+import { listarBloques, portadasActivas } from "@/lib/gestion/portadas";
+import { IconoBloque } from "@/components/iconos-bloques";
 import { urlImagen } from "@/lib/imagenes";
 import { TarjetaProducto } from "./catalogo/tarjeta-producto";
 import { SliderPortada } from "./slider-portada";
@@ -11,16 +12,12 @@ import { SliderPortada } from "./slider-portada";
 // Lee los destacados de la base en cada visita (no se arma en el build).
 export const dynamic = "force-dynamic";
 
-const DESTACADOS = [
-  { titulo: "Catálogo por rubros", texto: "Encuentra los productos filtrando por rubro y subrubro." },
-  { titulo: "Pedidos online", texto: "Arma tu carrito y confirma el pedido desde el celular." },
-  { titulo: "Retiro o envío", texto: "Retira en el local o recíbelo en la dirección que elijas." },
-];
 
 export default async function Inicio() {
-  const [catalogo, portadas, usuario] = await Promise.all([
+  const [catalogo, portadas, bloques, usuario] = await Promise.all([
     listarCatalogo({ destacados: true }),
     portadasActivas(),
+    listarBloques(true),
     usuarioActual(),
   ]);
   const destacados = catalogo.filas.slice(0, 8);
@@ -58,6 +55,19 @@ export default async function Inicio() {
           </BotonEnlace>
         </section>
       )}
+      {bloques.length > 0 && (
+        <section aria-label="Cómo compramos" className="-mt-2 grid gap-x-6 gap-y-4 rounded-2xl border border-borde bg-superficie px-4 py-5 sm:grid-cols-2 md:-mt-4 md:px-8 lg:grid-cols-4">
+          {bloques.map((b) => (
+            <div key={b.id} className="flex items-start gap-3">
+              <IconoBloque icono={b.icono} className="size-9 shrink-0 text-texto" />
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold tracking-wide uppercase">{b.titulo}</h2>
+                {b.texto && <p className="mt-0.5 text-sm text-texto-suave">{b.texto}</p>}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
       {destacados.length > 0 && (
         <section className="flex flex-col gap-3">
           <div className="flex items-baseline justify-between gap-3">
@@ -71,14 +81,6 @@ export default async function Inicio() {
           </div>
         </section>
       )}
-      <section className="grid gap-3 sm:grid-cols-3">
-        {DESTACADOS.map((d) => (
-          <Tarjeta key={d.titulo}>
-            <h2 className="font-semibold">{d.titulo}</h2>
-            <p className="mt-1 text-sm text-texto-suave">{d.texto}</p>
-          </Tarjeta>
-        ))}
-      </section>
     </div>
   );
 }
