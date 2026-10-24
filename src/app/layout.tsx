@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1e40af",
+  // Barra del sistema (hora, batería) en blanco: Android pone los íconos en negro.
+  themeColor: "#ffffff",
   // Deja dibujar debajo de la barra del sistema: la barra inferior azul la cubre (ver navegacion.tsx).
   viewportFit: "cover",
 };
