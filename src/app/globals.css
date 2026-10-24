@@ -30,10 +30,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* El fondo de la página (html) es azul: Chrome en Android pinta la barra de botones del
-   sistema con ese color. El body cubre toda la pantalla con el gris claro de siempre. */
+/* Chrome en Android pinta la barra de botones del sistema con el fondo de la página (html):
+   blanco, como la barra inferior. El body cubre toda la pantalla con el gris claro de siempre. */
 html {
-  background: var(--color-marca);
+  background: var(--color-superficie);
 }
 
 body {
