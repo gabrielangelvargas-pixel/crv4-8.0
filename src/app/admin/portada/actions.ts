@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { portadaAviso, portadaBloques, portadaFranja, portadas } from "@/db/schema";
+import { portadaAviso, portadaBloques, portadaFranja, portadaRubros, portadas } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { obtenerAviso, obtenerPortada, type Portada } from "@/lib/gestion/portadas";
 import { borrarImagen, ErrorImagen, guardarImagenAviso, guardarImagenPortada } from "@/lib/imagenes";
@@ -170,6 +170,18 @@ export async function guardarAviso(_prev: EstadoBloques, form: FormData): Promis
   const valores = { ...datos.data, imagen };
   await db.insert(portadaAviso).values({ id: 1, ...valores }).onDuplicateKeyUpdate({ set: { ...valores, actualizadoEn: new Date() } });
   if (actual.imagen && actual.imagen !== imagen) await borrarImagen(actual.imagen);
+  refrescar();
+  return { ok: true };
+}
+
+export async function guardarBloqueRubros(_prev: EstadoBloques, form: FormData): Promise<EstadoBloques> {
+  await requerirPermiso("portada", "editar");
+  const datos = z
+    .object({ titulo: z.string().trim().min(1, "Escribe el título del bloque").max(80, "El título es muy largo"), activo: z.boolean() })
+    .safeParse({ titulo: String(form.get("titulo") ?? ""), activo: form.get("activo") === "on" });
+  if (!datos.success) return { error: datos.error.issues[0]?.message ?? "Datos inválidos" };
+
+  await db.insert(portadaRubros).values({ id: 1, ...datos.data }).onDuplicateKeyUpdate({ set: { ...datos.data, actualizadoEn: new Date() } });
   refrescar();
   return { ok: true };
 }

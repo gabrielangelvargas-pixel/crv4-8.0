@@ -2,25 +2,33 @@ import Link from "next/link";
 import { BotonEnlace, EncabezadoPagina, Insignia, Tarjeta } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
-import { listarBloques, listarPortadas, obtenerAviso, obtenerFranja } from "@/lib/gestion/portadas";
+import { rubrosMasVisitados } from "@/lib/catalogo";
+import { listarBloques, listarPortadas, obtenerAviso, obtenerBloqueRubros, obtenerFranja } from "@/lib/gestion/portadas";
 import { urlImagen } from "@/lib/imagenes";
 import type { ClaveIcono } from "@/lib/iconos-bloque";
-import { guardarAviso, guardarBloques, guardarFranja } from "./actions";
+import { guardarAviso, guardarBloqueRubros, guardarBloques, guardarFranja } from "./actions";
 import { BloquesForm } from "./bloques-form";
-import { AvisoForm, FranjaForm } from "./promociones-form";
+import { AvisoForm, FranjaForm, RubrosForm } from "./promociones-form";
 
 export const metadata = { title: "Portada de la web · CRV4" };
 
 export default async function PortadasPage() {
   const usuario = await requerirPermiso("portada", "ver");
-  const [lista, bloques, franja, aviso] = await Promise.all([listarPortadas(), listarBloques(), obtenerFranja(), obtenerAviso()]);
+  const [lista, bloques, franja, aviso, bloqueRubros, masVisitados] = await Promise.all([
+    listarPortadas(),
+    listarBloques(),
+    obtenerFranja(),
+    obtenerAviso(),
+    obtenerBloqueRubros(),
+    rubrosMasVisitados(),
+  ]);
   const soloLectura = !tienePermiso(usuario, "portada", "editar");
 
   return (
     <>
       <EncabezadoPagina
         titulo="Portada de la web"
-        descripcion="Lo que se ve en el inicio de la web: el slider de imágenes, los bloques de información, la franja de texto y el aviso emergente."
+        descripcion="Lo que se ve en el inicio de la web: el slider de imágenes, los bloques de información, la franja de texto, las categorías más visitadas y el aviso emergente."
         acciones={
           <>
             <BotonEnlace href="/" variante="secundario">Ver la web</BotonEnlace>
@@ -62,6 +70,12 @@ export default async function PortadasPage() {
         soloLectura={soloLectura}
       />
       <FranjaForm accion={guardarFranja} inicial={franja} soloLectura={soloLectura} />
+      <RubrosForm
+        accion={guardarBloqueRubros}
+        inicial={bloqueRubros}
+        vista={masVisitados.map((r) => ({ id: r.id, nombre: r.nombre, visitas: r.visitas, conImagen: Boolean(r.imagen) }))}
+        soloLectura={soloLectura}
+      />
       <AvisoForm accion={guardarAviso} inicial={{ ...aviso, imagen: urlImagen(aviso.imagen, aviso.actualizadoEn) }} soloLectura={soloLectura} />
     </>
   );

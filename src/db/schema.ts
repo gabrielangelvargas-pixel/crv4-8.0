@@ -102,6 +102,8 @@ export const rubros = mysqlTable(
     rubroPadreId: int("rubro_padre_id").references((): AnyMySqlColumn => rubros.id),
     orden: int("orden").notNull().default(0),
     imagen: varchar("imagen", { length: 255 }),
+    // Veces que se abrió el catálogo filtrado por este rubro (para "los más visitados").
+    visitas: int("visitas").notNull().default(0),
     visibleWeb: boolean("visible_web").notNull().default(true),
     activo: boolean("activo").notNull().default(true),
     ...timestamps,
@@ -340,6 +342,14 @@ export const portadaAviso = mysqlTable("portada_aviso", {
   desde: date("desde", { mode: "string" }),
   hasta: date("hasta", { mode: "string" }),
   frecuencia: mysqlEnum("frecuencia", FRECUENCIAS_AVISO).notNull().default("dia"),
+  activo: boolean("activo").notNull().default(false),
+  ...timestamps,
+});
+
+// 17. Bloque de rubros más visitados del inicio (una sola fila, id = 1).
+export const portadaRubros = mysqlTable("portada_rubros", {
+  id: int("id").primaryKey(),
+  titulo: varchar("titulo", { length: 80 }).notNull().default("Categorías más visitadas"),
   activo: boolean("activo").notNull().default(false),
   ...timestamps,
 });
