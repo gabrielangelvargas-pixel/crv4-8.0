@@ -111,7 +111,7 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
               />
             ))}
           </FilaDeslizable>
-          {principal && principal.subrubros.length > 1 && (
+          {principal && (
             <FilaDeslizable className="gap-2 px-4">
               <Chip href={enlace({ rubro: principal.slug })} activo={elegido === principal}>
                 Todo
