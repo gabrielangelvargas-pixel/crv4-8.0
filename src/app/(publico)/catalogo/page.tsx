@@ -9,7 +9,7 @@ import { TarjetaProducto } from "./tarjeta-producto";
 
 export const metadata = { title: "Catálogo · CRV4 Mayorista" };
 
-function Chip({ href, activo, pronto, children }: { href: string; activo: boolean; pronto?: boolean; children: React.ReactNode }) {
+function Chip({ href, activo, children }: { href: string; activo: boolean; children: React.ReactNode }) {
   return (
     <Link
       href={href}
@@ -19,38 +19,14 @@ function Chip({ href, activo, pronto, children }: { href: string; activo: boolea
       }`}
     >
       {children}
-      {pronto && (
-        <span className={`ml-1.5 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase ${activo ? "bg-white/20 text-white" : "bg-amber-100 text-amber-800"}`}>
-          Pronto
-        </span>
-      )}
     </Link>
   );
 }
 
 // Rubro principal como círculo con su imagen (o su inicial) y el nombre debajo.
-function Circulo({
-  href,
-  activo,
-  imagen,
-  nombre,
-  icono,
-  pronto,
-}: {
-  href: string;
-  activo: boolean;
-  imagen?: string | null;
-  nombre: string;
-  icono?: React.ReactNode;
-  pronto?: boolean;
-}) {
+function Circulo({ href, activo, imagen, nombre, icono }: { href: string; activo: boolean; imagen?: string | null; nombre: string; icono?: React.ReactNode }) {
   return (
-    <Link href={href} aria-current={activo ? "page" : undefined} className="group relative flex w-18 shrink-0 flex-col items-center gap-1.5 sm:w-22">
-      {pronto && (
-        <span className="absolute top-12 z-10 rounded-full bg-amber-400 px-1.5 py-px text-[10px] font-bold text-amber-950 uppercase shadow-sm sm:top-16">
-          Pronto
-        </span>
-      )}
+    <Link href={href} aria-current={activo ? "page" : undefined} className="group flex w-18 shrink-0 flex-col items-center gap-1.5 sm:w-22">
       <span
         className={`flex size-16 items-center justify-center overflow-hidden rounded-full bg-marca-suave ring-offset-2 ring-offset-fondo transition sm:size-20 ${
           activo ? "ring-2 ring-marca" : "ring-1 ring-borde group-hover:ring-marca"
@@ -152,7 +128,6 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
                 activo={principal?.id === r.id}
                 imagen={urlImagen(r.imagen, r.actualizadoEn)}
                 nombre={r.nombre}
-                pronto={r.vacio}
               />
             ))}
           </FilaDeslizable>
@@ -162,7 +137,7 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
                 Todo
               </Chip>
               {principal.subrubros.map((s) => (
-                <Chip key={s.id} href={enlace({ rubro: s.slug })} activo={elegido === s} pronto={s.vacio}>
+                <Chip key={s.id} href={enlace({ rubro: s.slug })} activo={elegido === s}>
                   {s.nombre}
                 </Chip>
               ))}
