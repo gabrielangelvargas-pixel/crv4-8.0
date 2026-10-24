@@ -44,12 +44,26 @@ const productoVisible = and(
   sql`exists (select 1 from ${variantes} v where v.producto_id = ${productos.id} and v.activo = true)`,
 )!;
 
-export type RubroWeb = { id: number; nombre: string; slug: string; subrubros: { id: number; nombre: string; slug: string }[] };
+export type RubroWeb = {
+  id: number;
+  nombre: string;
+  slug: string;
+  imagen: string | null;
+  actualizadoEn: Date;
+  subrubros: { id: number; nombre: string; slug: string }[];
+};
 
 // Rubros principales con sus subrubros que tienen al menos un producto a la vista.
 export async function rubrosWeb(): Promise<RubroWeb[]> {
   const filas = await db
-    .select({ id: rubros.id, nombre: rubros.nombre, slug: rubros.slug, padreId: rubros.rubroPadreId, orden: rubros.orden })
+    .select({
+      id: rubros.id,
+      nombre: rubros.nombre,
+      slug: rubros.slug,
+      imagen: rubros.imagen,
+      actualizadoEn: rubros.actualizadoEn,
+      padreId: rubros.rubroPadreId,
+    })
     .from(rubros)
     .leftJoin(padre, eq(padre.id, rubros.rubroPadreId))
     .where(rubroVisible)
@@ -70,6 +84,8 @@ export async function rubrosWeb(): Promise<RubroWeb[]> {
       id: r.id,
       nombre: r.nombre,
       slug: r.slug,
+      imagen: r.imagen,
+      actualizadoEn: r.actualizadoEn,
       subrubros: filas
         .filter((s) => s.padreId === r.id && conProductos.has(s.id))
         .map((s) => ({ id: s.id, nombre: s.nombre, slug: s.slug })),
