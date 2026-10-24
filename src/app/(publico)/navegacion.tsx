@@ -17,12 +17,14 @@ function activo(pathname: string, href: string) {
 
 // Barra inferior fija en el celular, al alcance del pulgar. Es azul y se extiende por
 // debajo de la barra de Android/iPhone (viewport-fit=cover), que así también se ve azul.
+// El degradé termina en el azul de marca, el mismo que el fondo de la página (globals.css),
+// para que empalme con la barra de botones de Android.
 export function NavegacionInferior() {
   const pathname = usePathname();
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-30 bg-marca pb-[env(safe-area-inset-bottom)] text-white md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 bg-linear-to-b from-blue-600 to-marca pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-4px_16px_rgba(30,64,175,0.25)] md:hidden"
     >
       <ul className="grid grid-cols-4">
         {ITEMS.map(({ href, titulo, Icono }) => (
