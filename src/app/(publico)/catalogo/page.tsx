@@ -9,7 +9,7 @@ import { TarjetaProducto } from "./tarjeta-producto";
 
 export const metadata = { title: "Catálogo · CRV4 Mayorista" };
 
-function Chip({ href, activo, children }: { href: string; activo: boolean; children: React.ReactNode }) {
+function Chip({ href, activo, pronto, children }: { href: string; activo: boolean; pronto?: boolean; children: React.ReactNode }) {
   return (
     <Link
       href={href}
@@ -19,14 +19,38 @@ function Chip({ href, activo, children }: { href: string; activo: boolean; child
       }`}
     >
       {children}
+      {pronto && (
+        <span className={`ml-1.5 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase ${activo ? "bg-white/20 text-white" : "bg-amber-100 text-amber-800"}`}>
+          Pronto
+        </span>
+      )}
     </Link>
   );
 }
 
 // Rubro principal como círculo con su imagen (o su inicial) y el nombre debajo.
-function Circulo({ href, activo, imagen, nombre, icono }: { href: string; activo: boolean; imagen?: string | null; nombre: string; icono?: React.ReactNode }) {
+function Circulo({
+  href,
+  activo,
+  imagen,
+  nombre,
+  icono,
+  pronto,
+}: {
+  href: string;
+  activo: boolean;
+  imagen?: string | null;
+  nombre: string;
+  icono?: React.ReactNode;
+  pronto?: boolean;
+}) {
   return (
-    <Link href={href} aria-current={activo ? "page" : undefined} className="group flex w-18 shrink-0 flex-col items-center gap-1.5 sm:w-22">
+    <Link href={href} aria-current={activo ? "page" : undefined} className="group relative flex w-18 shrink-0 flex-col items-center gap-1.5 sm:w-22">
+      {pronto && (
+        <span className="absolute top-12 z-10 rounded-full bg-amber-400 px-1.5 py-px text-[10px] font-bold text-amber-950 uppercase shadow-sm sm:top-16">
+          Pronto
+        </span>
+      )}
       <span
         className={`flex size-16 items-center justify-center overflow-hidden rounded-full bg-marca-suave ring-offset-2 ring-offset-fondo transition sm:size-20 ${
           activo ? "ring-2 ring-marca" : "ring-1 ring-borde group-hover:ring-marca"
@@ -52,6 +76,26 @@ function IconoTodos() {
       <rect x="3" y="13" width="8" height="8" rx="2" />
       <rect x="13" y="13" width="8" height="8" rx="2" />
     </svg>
+  );
+}
+
+// Categoría todavía sin productos a la vista.
+function MuyPronto({ nombre }: { nombre: string }) {
+  return (
+    <Tarjeta className="flex flex-col items-center gap-3 py-10 text-center">
+      <span className="flex size-14 items-center justify-center rounded-full bg-amber-100">
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="size-7 fill-none stroke-amber-600" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 21h14M5 3h14M7 3v3a5 5 0 0 0 10 0V3M7 21v-3a5 5 0 0 1 10 0v3" />
+        </svg>
+      </span>
+      <div>
+        <p className="text-lg font-semibold">¡Muy pronto!</p>
+        <p className="mt-1 max-w-sm text-sm text-texto-suave">
+          Estamos preparando los productos de <strong className="font-medium text-texto">{nombre}</strong>. Mientras tanto, te invitamos a recorrer el resto del catálogo.
+        </p>
+      </div>
+      <BotonEnlace href="/catalogo">Ver todo el catálogo</BotonEnlace>
+    </Tarjeta>
   );
 }
 
@@ -85,7 +129,7 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
         <h1 className="text-2xl font-semibold tracking-tight">{elegido?.nombre ?? "Catálogo"}</h1>
         <p className="mt-1 text-sm text-texto-suave">
           {busqueda ? `Resultados para “${busqueda}” · ` : ""}
-          {total === 1 ? "1 producto" : `${total} productos`}
+          {total === 0 && elegido && !busqueda ? "Próximamente" : total === 1 ? "1 producto" : `${total} productos`}
           {busqueda && (
             <>
               {" · "}
@@ -108,16 +152,17 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
                 activo={principal?.id === r.id}
                 imagen={urlImagen(r.imagen, r.actualizadoEn)}
                 nombre={r.nombre}
+                pronto={r.vacio}
               />
             ))}
           </FilaDeslizable>
-          {principal && (
+          {principal && principal.subrubros.length > 0 && (
             <FilaDeslizable className="gap-2 px-4">
               <Chip href={enlace({ rubro: principal.slug })} activo={elegido === principal}>
                 Todo
               </Chip>
               {principal.subrubros.map((s) => (
-                <Chip key={s.id} href={enlace({ rubro: s.slug })} activo={elegido === s}>
+                <Chip key={s.id} href={enlace({ rubro: s.slug })} activo={elegido === s} pronto={s.vacio}>
                   {s.nombre}
                 </Chip>
               ))}
@@ -126,7 +171,9 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
         </nav>
       )}
 
-      {filas.length === 0 ? (
+      {filas.length === 0 && elegido && !busqueda ? (
+        <MuyPronto nombre={elegido.nombre} />
+      ) : filas.length === 0 ? (
         <Tarjeta className="text-sm text-texto-suave">No encontramos productos{busqueda ? " con esa búsqueda" : ""}.</Tarjeta>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

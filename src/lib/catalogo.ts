@@ -50,10 +50,12 @@ export type RubroWeb = {
   slug: string;
   imagen: string | null;
   actualizadoEn: Date;
-  subrubros: { id: number; nombre: string; slug: string }[];
+  // Sin productos a la vista (propios ni de sus subrubros): se muestra como "Muy pronto".
+  vacio: boolean;
+  subrubros: { id: number; nombre: string; slug: string; vacio: boolean }[];
 };
 
-// Rubros principales con sus subrubros que tienen al menos un producto a la vista.
+// Rubros principales visibles con sus subrubros, marcando los que todavía no tienen productos a la vista.
 export async function rubrosWeb(): Promise<RubroWeb[]> {
   const filas = await db
     .select({
@@ -80,17 +82,20 @@ export async function rubrosWeb(): Promise<RubroWeb[]> {
   );
   return filas
     .filter((r) => r.padreId === null)
-    .map((r) => ({
-      id: r.id,
-      nombre: r.nombre,
-      slug: r.slug,
-      imagen: r.imagen,
-      actualizadoEn: r.actualizadoEn,
-      subrubros: filas
-        .filter((s) => s.padreId === r.id && conProductos.has(s.id))
-        .map((s) => ({ id: s.id, nombre: s.nombre, slug: s.slug })),
-    }))
-    .filter((r) => r.subrubros.length > 0);
+    .map((r) => {
+      const subrubros = filas
+        .filter((s) => s.padreId === r.id)
+        .map((s) => ({ id: s.id, nombre: s.nombre, slug: s.slug, vacio: !conProductos.has(s.id) }));
+      return {
+        id: r.id,
+        nombre: r.nombre,
+        slug: r.slug,
+        imagen: r.imagen,
+        actualizadoEn: r.actualizadoEn,
+        vacio: !conProductos.has(r.id) && subrubros.every((s) => s.vacio),
+        subrubros,
+      };
+    });
 }
 
 // Suma una visita al rubro cuando alguien abre el catálogo filtrado por él.
@@ -104,7 +109,9 @@ export type RubroDestacado = { id: number; nombre: string; slug: string; imagen:
 // Los rubros (principales o subrubros) con productos a la vista más visitados; a igual
 // cantidad de visitas, en el orden del catálogo.
 export async function rubrosMasVisitados(cantidad = 4): Promise<RubroDestacado[]> {
-  const conProductos = new Set((await rubrosWeb()).flatMap((r) => [r.id, ...r.subrubros.map((s) => s.id)]));
+  const conProductos = new Set(
+    (await rubrosWeb()).flatMap((r) => [r, ...r.subrubros]).filter((r) => !r.vacio).map((r) => r.id),
+  );
   const filas = await db
     .select({
       id: rubros.id,
