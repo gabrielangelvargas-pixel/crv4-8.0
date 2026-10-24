@@ -2,7 +2,9 @@ import Link from "next/link";
 import { after } from "next/server";
 import { BotonEnlace, Tarjeta } from "@/components/ui";
 import { usuarioActual } from "@/lib/auth/dal";
+import { urlImagen } from "@/lib/imagenes";
 import { listarCatalogo, PRODUCTOS_POR_PAGINA_WEB, registrarVisitaRubro, rubrosWeb } from "@/lib/catalogo";
+import { FilaDeslizable } from "./fila-deslizable";
 import { TarjetaProducto } from "./tarjeta-producto";
 
 export const metadata = { title: "Catálogo · CRV4 Mayorista" };
@@ -12,12 +14,44 @@ function Chip({ href, activo, children }: { href: string; activo: boolean; child
     <Link
       href={href}
       aria-current={activo ? "page" : undefined}
-      className={`inline-flex min-h-9 shrink-0 items-center rounded-full border px-3 text-sm whitespace-nowrap ${
-        activo ? "border-marca bg-marca text-white" : "border-borde bg-superficie hover:border-marca"
+      className={`inline-flex min-h-8 shrink-0 items-center rounded-full px-3 text-sm whitespace-nowrap transition-colors ${
+        activo ? "bg-marca font-medium text-white" : "bg-marca-suave text-texto hover:bg-marca/15"
       }`}
     >
       {children}
     </Link>
+  );
+}
+
+// Rubro principal como círculo con su imagen (o su inicial) y el nombre debajo.
+function Circulo({ href, activo, imagen, nombre, icono }: { href: string; activo: boolean; imagen?: string | null; nombre: string; icono?: React.ReactNode }) {
+  return (
+    <Link href={href} aria-current={activo ? "page" : undefined} className="group flex w-18 shrink-0 flex-col items-center gap-1.5 sm:w-22">
+      <span
+        className={`flex size-16 items-center justify-center overflow-hidden rounded-full bg-marca-suave ring-offset-2 ring-offset-fondo transition sm:size-20 ${
+          activo ? "ring-2 ring-marca" : "ring-1 ring-borde group-hover:ring-marca"
+        }`}
+      >
+        {imagen ? (
+          // eslint-disable-next-line @next/next/no-img-element -- la imagen ya está optimizada a 600x600 WEBP
+          <img src={imagen} alt="" loading="lazy" className="size-full object-cover" />
+        ) : (
+          (icono ?? <span className="text-2xl font-bold text-marca/50">{nombre.charAt(0)}</span>)
+        )}
+      </span>
+      <span className={`line-clamp-2 text-center text-xs leading-tight ${activo ? "font-semibold text-marca" : "text-texto"}`}>{nombre}</span>
+    </Link>
+  );
+}
+
+function IconoTodos() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-7 fill-marca">
+      <rect x="3" y="3" width="8" height="8" rx="2" />
+      <rect x="13" y="3" width="8" height="8" rx="2" />
+      <rect x="3" y="13" width="8" height="8" rx="2" />
+      <rect x="13" y="13" width="8" height="8" rx="2" />
+    </svg>
   );
 }
 
@@ -64,28 +98,30 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
       </div>
 
       {arbol.length > 0 && (
-        <nav aria-label="Rubros" className="-mx-4 flex flex-col gap-2 overflow-hidden">
-          <div className="flex gap-2 overflow-x-auto px-4 pb-1">
-            <Chip href={enlace({ rubro: undefined })} activo={!principal}>
-              Todos
-            </Chip>
+        <nav aria-label="Rubros" className="-mx-4 flex flex-col gap-3">
+          <FilaDeslizable className="gap-3 px-4 py-1">
+            <Circulo href={enlace({ rubro: undefined })} activo={!principal} nombre="Todos" icono={<IconoTodos />} />
             {arbol.map((r) => (
-              <Chip key={r.id} href={enlace({ rubro: r.slug })} activo={principal?.id === r.id}>
-                {r.nombre}
-              </Chip>
+              <Circulo
+                key={r.id}
+                href={enlace({ rubro: r.slug })}
+                activo={principal?.id === r.id}
+                imagen={urlImagen(r.imagen, r.actualizadoEn)}
+                nombre={r.nombre}
+              />
             ))}
-          </div>
+          </FilaDeslizable>
           {principal && principal.subrubros.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto px-4 pb-1">
+            <FilaDeslizable className="gap-2 px-4">
               <Chip href={enlace({ rubro: principal.slug })} activo={elegido === principal}>
-                Todo {principal.nombre}
+                Todo
               </Chip>
               {principal.subrubros.map((s) => (
                 <Chip key={s.id} href={enlace({ rubro: s.slug })} activo={elegido === s}>
                   {s.nombre}
                 </Chip>
               ))}
-            </div>
+            </FilaDeslizable>
           )}
         </nav>
       )}
