@@ -25,16 +25,7 @@ export default async function RubrosPage() {
       <EncabezadoPagina
         titulo="Rubros"
         descripcion="Rubros principales y sus subrubros, en el orden del catálogo."
-        acciones={
-          puedeCrear && (
-            <>
-              <BotonEnlace variante="secundario" href="/admin/rubros/importar">
-                Importar de WooCommerce
-              </BotonEnlace>
-              <BotonEnlace href="/admin/rubros/nuevo">Nuevo rubro</BotonEnlace>
-            </>
-          )
-        }
+        acciones={puedeCrear && <BotonEnlace href="/admin/rubros/nuevo">Nuevo rubro</BotonEnlace>}
       />
       {arbol.length === 0 && (
         <Tarjeta className="text-center text-sm text-texto-suave">Todavía no hay rubros cargados.</Tarjeta>
