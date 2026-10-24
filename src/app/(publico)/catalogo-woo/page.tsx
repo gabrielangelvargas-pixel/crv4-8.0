@@ -1,5 +1,4 @@
 import { Aviso, BotonEnlace, Tarjeta } from "@/components/ui";
-import { requerirGestion } from "@/lib/auth/dal";
 import { configWoo, categoriasWoo, ErrorWoo, productosWoo, type ProductoWoo } from "@/lib/woocommerce";
 import { FilaDeslizable } from "../catalogo/fila-deslizable";
 import { Chip, Circulo, IconoTodos, MuyPronto } from "../catalogo/navegacion-rubros";
@@ -39,9 +38,8 @@ function TarjetaWoo({ producto: p }: { producto: ProductoWoo }) {
 }
 
 // Página de prueba: muestra el catálogo de la tienda WooCommerce sin guardarlo en CRV4.
-// Solo la ve el personal de gestión (sin sesión, lleva al login).
+// Es pública: la puede ver cualquier visitante.
 export default async function CatalogoWooPage({ searchParams }: PageProps<"/catalogo-woo">) {
-  await requerirGestion();
   const { q, categoria: slug, pagina } = await searchParams;
   const busqueda = typeof q === "string" && q.trim() ? q.trim() : undefined;
 
@@ -87,7 +85,7 @@ export default async function CatalogoWooPage({ searchParams }: PageProps<"/cata
 
   return (
     <div className="flex flex-col gap-4">
-      <Aviso>Página de prueba: catálogo leído de tu tienda WooCommerce. Se actualiza solo cada 15 minutos. Solo la ve el personal.</Aviso>
+      <Aviso>Página de prueba: catálogo leído de tu tienda WooCommerce. Se actualiza solo cada 15 minutos.</Aviso>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{elegida?.nombre ?? "Catálogo WooCommerce"}</h1>
         <p className="mt-1 text-sm text-texto-suave">
