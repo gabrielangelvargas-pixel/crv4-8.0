@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rutaFotoPortada, rutaFotoProducto, rutaValida } from "@/lib/rutas-imagen";
+import { rutaFotoPortada, rutaFotoProducto, rutaFotoRubro, rutaValida } from "@/lib/rutas-imagen";
 
 describe("rutas de imágenes", () => {
   it("arma la ruta con el rubro y el código", () => {
@@ -32,5 +32,14 @@ describe("rutas de la portada", () => {
     expect(rutaValida("portadas/lq3x9k2a-movil.webp")).toBe(true);
     expect(rutaValida("portadas/lq3x9k2a-tablet.webp")).toBe(false);
     expect(rutaValida("portadas/../x-movil.webp")).toBe(false);
+  });
+});
+
+describe("rutas de los rubros", () => {
+  it("arma y acepta la ruta de la imagen del rubro", () => {
+    expect(rutaFotoRubro("lq3x9k2a")).toBe("rubros/lq3x9k2a.webp");
+    expect(rutaValida("rubros/lq3x9k2a.webp")).toBe(true);
+    expect(rutaValida("rubros/../x.webp")).toBe(false);
+    expect(rutaValida("rubros/Vasos.webp")).toBe(false);
   });
 });

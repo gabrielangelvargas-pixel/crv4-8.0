@@ -87,6 +87,55 @@ export function FranjaForm({ accion, inicial, soloLectura = false }: { accion: A
   );
 }
 
+type InicialRubros = { titulo: string; activo: boolean };
+type RubroVista = { id: number; nombre: string; visitas: number; conImagen: boolean };
+
+export function RubrosForm({
+  accion,
+  inicial,
+  vista,
+  soloLectura = false,
+}: {
+  accion: Accion;
+  inicial: InicialRubros;
+  vista: RubroVista[];
+  soloLectura?: boolean;
+}) {
+  const envio = useEnvio(accion);
+  return (
+    <form onSubmit={envio.alEnviar} onChange={envio.marcarCambio} className={claseCaja}>
+      <div>
+        <h2 className="font-semibold">Categorías más visitadas</h2>
+        <p className="text-sm text-texto-suave">
+          Los 4 rubros más visitados del catálogo, con su imagen, debajo de la franja de texto. Se eligen solos según las visitas
+          (las del personal no cuentan). La imagen de cada uno se carga en Gestión › Rubros.
+        </p>
+      </div>
+      <fieldset disabled={soloLectura} className="flex flex-col gap-4">
+        <Campo etiqueta="Título del bloque" name="titulo" maxLength={80} required defaultValue={inicial.titulo} />
+        <Casilla etiqueta="Visible (se muestra en la web)" name="activo" defaultChecked={inicial.activo} />
+      </fieldset>
+      {vista.length > 0 && (
+        <div className="flex flex-col gap-1.5 text-sm">
+          <span className="font-medium">Hoy se mostrarían</span>
+          <ol className="flex flex-col gap-1">
+            {vista.map((r, i) => (
+              <li key={r.id} className="flex flex-wrap items-baseline gap-x-2">
+                <span>
+                  {i + 1}. {r.nombre}
+                </span>
+                <span className="text-texto-suave">{r.visitas === 1 ? "1 visita" : `${r.visitas} visitas`}</span>
+                {!r.conImagen && <span className="text-amber-800">· sin imagen</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+      <Pie estado={envio.estado} enviando={envio.enviando} guardado={envio.guardado} soloLectura={soloLectura} />
+    </form>
+  );
+}
+
 type InicialAviso = {
   titulo: string | null;
   texto: string | null;

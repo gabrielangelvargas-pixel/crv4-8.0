@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { BotonEnlace, Tarjeta } from "@/components/ui";
-import { listarCatalogo, PRODUCTOS_POR_PAGINA_WEB, rubrosWeb } from "@/lib/catalogo";
+import { usuarioActual } from "@/lib/auth/dal";
+import { listarCatalogo, PRODUCTOS_POR_PAGINA_WEB, registrarVisitaRubro, rubrosWeb } from "@/lib/catalogo";
 import { TarjetaProducto } from "./tarjeta-producto";
 
 export const metadata = { title: "Catálogo · CRV4 Mayorista" };
@@ -27,6 +29,11 @@ export default async function CatalogoPage({ searchParams }: PageProps<"/catalog
   const elegido = principal?.slug === slug ? principal : principal?.subrubros.find((s) => s.slug === slug);
   const { filas, total, pagina: actual } = await listarCatalogo({ busqueda, rubro: elegido, pagina: Number(pagina) || 1 });
   const paginas = Math.max(1, Math.ceil(total / PRODUCTOS_POR_PAGINA_WEB));
+
+  // Cuenta para "los más visitados": la primera página de un rubro, sin búsqueda y sin contar al personal.
+  if (elegido && actual === 1 && !busqueda && !(await usuarioActual())?.accesoGestion) {
+    after(() => registrarVisitaRubro(elegido.id));
+  }
 
   const enlace = (cambios: { rubro?: string; pagina?: number }) => {
     const p = new URLSearchParams();

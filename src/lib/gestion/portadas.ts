@@ -1,7 +1,7 @@
 import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { portadaAviso, portadaBloques, portadaFranja, portadas } from "@/db/schema";
+import { portadaAviso, portadaBloques, portadaFranja, portadaRubros, portadas } from "@/db/schema";
 
 export type Portada = typeof portadas.$inferSelect;
 
@@ -60,4 +60,12 @@ export async function obtenerAviso(): Promise<Aviso> {
       actualizadoEn: ahora,
     }
   );
+}
+
+export type BloqueRubros = typeof portadaRubros.$inferSelect;
+
+export async function obtenerBloqueRubros(): Promise<BloqueRubros> {
+  const [fila] = await db.select().from(portadaRubros).where(eq(portadaRubros.id, 1)).limit(1);
+  const ahora = new Date();
+  return fila ?? { id: 1, titulo: "Categorías más visitadas", activo: false, creadoEn: ahora, actualizadoEn: ahora };
 }

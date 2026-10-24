@@ -36,6 +36,13 @@
       "when": 1792767196776,
       "tag": "0004_portada_franja_aviso",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1792804122838,
+      "tag": "0005_rubros_visitas",
+      "breakpoints": true
     }
   ]
 }

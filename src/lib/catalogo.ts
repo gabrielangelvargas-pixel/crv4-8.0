@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, eq, isNull, like, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, like, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { db } from "@/db";
 import { pedidoItems, pedidos, productos, rubros, variantes } from "@/db/schema";
@@ -75,6 +75,34 @@ export async function rubrosWeb(): Promise<RubroWeb[]> {
         .map((s) => ({ id: s.id, nombre: s.nombre, slug: s.slug })),
     }))
     .filter((r) => r.subrubros.length > 0);
+}
+
+// Suma una visita al rubro cuando alguien abre el catálogo filtrado por él.
+export async function registrarVisitaRubro(id: number): Promise<void> {
+  // Sin tocar actualizado_en, que versiona la dirección de la foto.
+  await db.update(rubros).set({ visitas: sql`${rubros.visitas} + 1`, actualizadoEn: sql`${rubros.actualizadoEn}` }).where(eq(rubros.id, id));
+}
+
+export type RubroDestacado = { id: number; nombre: string; slug: string; imagen: string | null; actualizadoEn: Date; visitas: number };
+
+// Los rubros (principales o subrubros) con productos a la vista más visitados; a igual
+// cantidad de visitas, en el orden del catálogo.
+export async function rubrosMasVisitados(cantidad = 4): Promise<RubroDestacado[]> {
+  const conProductos = new Set((await rubrosWeb()).flatMap((r) => [r.id, ...r.subrubros.map((s) => s.id)]));
+  const filas = await db
+    .select({
+      id: rubros.id,
+      nombre: rubros.nombre,
+      slug: rubros.slug,
+      imagen: rubros.imagen,
+      actualizadoEn: rubros.actualizadoEn,
+      visitas: rubros.visitas,
+    })
+    .from(rubros)
+    .leftJoin(padre, eq(padre.id, rubros.rubroPadreId))
+    .where(rubroVisible)
+    .orderBy(desc(rubros.visitas), asc(rubros.orden), asc(rubros.nombre));
+  return filas.filter((r) => conProductos.has(r.id)).slice(0, cantidad);
 }
 
 export type FiltroCatalogo = { busqueda?: string; rubro?: RubroWeb | RubroWeb["subrubros"][number]; pagina?: number; destacados?: boolean };

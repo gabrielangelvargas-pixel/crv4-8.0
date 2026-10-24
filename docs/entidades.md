@@ -33,7 +33,8 @@ Reglas:
 | descripcion | texto, opcional | |
 | rubro_padre_id | FK a Rubro, opcional | vacío = rubro principal; con valor = subrubro |
 | orden | entero | orden en el catálogo |
-| imagen | texto, opcional | |
+| imagen | texto, opcional | `rubros/<único>.webp`, recortada cuadrada 600 × 600; se muestra en el inicio |
+| visitas | entero | veces que se abrió el catálogo filtrado por el rubro (primera página, sin búsqueda, sin contar al personal) |
 | visible_web | booleano | |
 | activo | booleano | |
 
@@ -263,6 +264,19 @@ Una sola fila (id = 1); si no existe, no hay aviso.
 
 Reglas:
 - Aparece solo en el inicio. El navegador recuerda que ya se vio; al guardar el aviso cuenta como nuevo y vuelve a mostrarse.
+
+## 15. PortadaRubros (bloque de categorías más visitadas del inicio)
+
+Una sola fila (id = 1); si no existe, el bloque está oculto.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | entero, PK | siempre 1 |
+| titulo | texto | por defecto "Categorías más visitadas" |
+| activo | sí/no | |
+
+Reglas:
+- Muestra los 4 rubros (principales o subrubros) con productos a la vista que tienen más visitas; a igual cantidad, el orden del catálogo. Va debajo de la franja de texto.
 
 ## Para más adelante
 Pagos y medios de pago, estadísticas, compras a proveedores, identificación fiscal del proveedor, variantes con dos dimensiones.

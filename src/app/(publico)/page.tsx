@@ -3,8 +3,8 @@ import { Fragment, type CSSProperties } from "react";
 import { BotonEnlace } from "@/components/ui";
 import { usuarioActual } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
-import { listarCatalogo } from "@/lib/catalogo";
-import { listarBloques, obtenerAviso, obtenerFranja, portadasActivas } from "@/lib/gestion/portadas";
+import { listarCatalogo, rubrosMasVisitados } from "@/lib/catalogo";
+import { listarBloques, obtenerAviso, obtenerBloqueRubros, obtenerFranja, portadasActivas } from "@/lib/gestion/portadas";
 import { IconoBloque } from "@/components/iconos-bloques";
 import { Franja } from "@/components/franja";
 import { lineasDeTexto } from "@/lib/iconos-bloque";
@@ -19,14 +19,16 @@ export const dynamic = "force-dynamic";
 
 
 export default async function Inicio() {
-  const [catalogo, portadas, bloques, franja, aviso, usuario] = await Promise.all([
+  const [catalogo, portadas, bloques, franja, bloqueRubros, aviso, usuario] = await Promise.all([
     listarCatalogo({ destacados: true }),
     portadasActivas(),
     listarBloques(true),
     obtenerFranja(),
+    obtenerBloqueRubros(),
     obtenerAviso(),
     usuarioActual(),
   ]);
+  const masVisitados = bloqueRubros.activo ? await rubrosMasVisitados() : [];
   const destacados = catalogo.filas.slice(0, 8);
   const mostrarAviso = aviso.activo && avisoVigente(aviso.desde, aviso.hasta, hoyEnArgentina());
   const puedeEditar = usuario?.accesoGestion && tienePermiso(usuario, "portada", "ver");
@@ -102,6 +104,37 @@ export default async function Inicio() {
           colorTexto={franja.colorTexto}
           className="-mx-4 md:mx-0 md:rounded-2xl"
         />
+      )}
+      {masVisitados.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-xl font-semibold tracking-tight">{bloqueRubros.titulo}</h2>
+            <Link href="/catalogo" className="text-sm text-marca hover:underline">Ver catálogo</Link>
+          </div>
+          <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {masVisitados.map((r) => {
+              const foto = urlImagen(r.imagen, r.actualizadoEn);
+              return (
+                <li key={r.id}>
+                  <Link
+                    href={`/catalogo?rubro=${r.slug}`}
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-borde bg-superficie shadow-sm hover:border-marca"
+                  >
+                    <div className="aspect-square overflow-hidden bg-marca-suave">
+                      {foto ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- la imagen ya está optimizada a 600x600 WEBP
+                        <img src={foto} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-4xl font-bold text-marca/40">{r.nombre.charAt(0)}</div>
+                      )}
+                    </div>
+                    <span className="px-3 py-3 text-center text-sm font-semibold md:text-base">{r.nombre}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
       {destacados.length > 0 && (
         <section className="flex flex-col gap-3">

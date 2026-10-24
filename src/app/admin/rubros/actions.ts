@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { productos, rubros } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { obtenerRubro, slugEnUso, usoDelRubro } from "@/lib/gestion/rubros";
-import { moverImagen } from "@/lib/imagenes";
+import { borrarImagen, ErrorImagen, guardarImagenRubro, moverImagen } from "@/lib/imagenes";
 import { rutaFotoProducto } from "@/lib/rutas-imagen";
 import { slugificar, textoOpcional } from "@/lib/texto";
 
@@ -51,6 +51,20 @@ async function validarPadre(padreId: number | null, id?: number): Promise<string
   return null;
 }
 
+// Guarda la foto nueva si se subió; la anterior se borra recién cuando la base apunta a la nueva.
+async function resolverImagen(form: FormData, actual: string | null) {
+  const subida = form.get("imagen");
+  if (subida instanceof File && subida.size > 0) {
+    try {
+      return { ok: true as const, imagen: await guardarImagenRubro(subida) };
+    } catch (error) {
+      if (error instanceof ErrorImagen) return { ok: false as const, error: error.message };
+      throw error;
+    }
+  }
+  return { ok: true as const, imagen: form.get("quitarImagen") === "on" ? null : actual };
+}
+
 function mensajeDuplicado(error: unknown): string | null {
   return String(error).includes("Duplicate") ? "Ya existe un rubro con ese nombre en el mismo nivel" : null;
 }
@@ -62,14 +76,18 @@ export async function crearRubro(_prev: EstadoFormulario, form: FormData): Promi
   const errorPadre = await validarPadre(datos.data.rubroPadreId);
   if (errorPadre) return { error: errorPadre };
   if (await slugEnUso(datos.data.slug)) return { error: "Esa dirección web ya la usa otro rubro" };
+  const foto = await resolverImagen(form, null);
+  if (!foto.ok) return { error: foto.error };
 
   try {
-    await db.insert(rubros).values(datos.data);
+    await db.insert(rubros).values({ ...datos.data, imagen: foto.imagen });
   } catch (error) {
+    await borrarImagen(foto.imagen);
     const mensaje = mensajeDuplicado(error);
     if (mensaje) return { error: mensaje };
     throw error;
   }
+  revalidatePath("/");
   revalidatePath("/admin/rubros");
   redirect("/admin/rubros");
 }
@@ -87,14 +105,19 @@ export async function editarRubro(
   const errorPadre = await validarPadre(datos.data.rubroPadreId, id);
   if (errorPadre) return { error: errorPadre };
   if (await slugEnUso(datos.data.slug, id)) return { error: "Esa dirección web ya la usa otro rubro" };
+  const foto = await resolverImagen(form, actual.imagen);
+  if (!foto.ok) return { error: foto.error };
 
   try {
-    await db.update(rubros).set(datos.data).where(eq(rubros.id, id));
+    await db.update(rubros).set({ ...datos.data, imagen: foto.imagen }).where(eq(rubros.id, id));
   } catch (error) {
+    if (foto.imagen !== actual.imagen) await borrarImagen(foto.imagen);
     const mensaje = mensajeDuplicado(error);
     if (mensaje) return { error: mensaje };
     throw error;
   }
+  if (actual.imagen && actual.imagen !== foto.imagen) await borrarImagen(actual.imagen);
+  revalidatePath("/");
   if (datos.data.slug !== actual.slug) await moverFotosDelRubro(id, datos.data.slug);
   revalidatePath("/admin/rubros");
   redirect("/admin/rubros");
@@ -119,7 +142,10 @@ export async function eliminarRubro(id: number): Promise<void> {
   const uso = await usoDelRubro(id);
   if (uso.subrubros > 0 || uso.productos > 0) redirect(`/admin/rubros/${id}?en-uso=1`);
 
+  const actual = await obtenerRubro(id);
   await db.delete(rubros).where(eq(rubros.id, id));
+  await borrarImagen(actual?.imagen);
+  revalidatePath("/");
   revalidatePath("/admin/rubros");
   redirect("/admin/rubros");
 }

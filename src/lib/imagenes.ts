@@ -3,7 +3,7 @@ import { mkdir, rename, rm, rmdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
 import sharp from "sharp";
-import { MEDIDAS_PORTADA, rutaFotoPortada, rutaValida, type FormatoPortada } from "@/lib/rutas-imagen";
+import { MEDIDAS_PORTADA, rutaFotoPortada, rutaFotoRubro, rutaValida, type FormatoPortada } from "@/lib/rutas-imagen";
 
 // Las fotos se guardan fuera de la carpeta publicada (en Hostinger, ~/imagenes)
 // para que no se pierdan en cada despliegue. Se puede cambiar con CARPETA_IMAGENES.
@@ -77,6 +77,27 @@ export async function guardarImagenAviso(archivo: File): Promise<string> {
     throw new ErrorImagen("El archivo no es una imagen válida (JPG, PNG, WEBP…)");
   }
   const ruta = rutaFotoPortada("aviso", Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+  const destino = rutaImagen(ruta);
+  await mkdir(path.dirname(destino), { recursive: true });
+  await writeFile(destino, datos);
+  return ruta;
+}
+
+// La del rubro se recorta cuadrada desde el centro (600 × 600) para las tarjetas del inicio.
+export async function guardarImagenRubro(archivo: File): Promise<string> {
+  if (archivo.size > TAMANO_MAXIMO) throw new ErrorImagen("La imagen pesa más de 7 MB");
+  let datos: Buffer;
+  try {
+    datos = await sharp(Buffer.from(await archivo.arrayBuffer()))
+      .rotate()
+      .resize(600, 600, { fit: "cover", position: "centre" })
+      .flatten({ background: "#ffffff" })
+      .webp({ quality: 82 })
+      .toBuffer();
+  } catch {
+    throw new ErrorImagen("El archivo no es una imagen válida (JPG, PNG, WEBP…)");
+  }
+  const ruta = rutaFotoRubro(Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
   const destino = rutaImagen(ruta);
   await mkdir(path.dirname(destino), { recursive: true });
   await writeFile(destino, datos);

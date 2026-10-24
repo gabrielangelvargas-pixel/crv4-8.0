@@ -83,5 +83,14 @@
     "bps": true,
     "folderMillis": 1792767196776,
     "hash": "5488d5912abb923735aa62971efaf294ca5645108b174adfc2e59573889e8d86"
+  },
+  {
+    "sql": [
+      "CREATE TABLE `portada_rubros` (\n\t`id` int NOT NULL,\n\t`titulo` varchar(80) NOT NULL DEFAULT 'Categorías más visitadas',\n\t`activo` boolean NOT NULL DEFAULT false,\n\t`creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\tCONSTRAINT `portada_rubros_id` PRIMARY KEY(`id`)\n);\n",
+      "\nALTER TABLE `rubros` ADD `visitas` int DEFAULT 0 NOT NULL;"
+    ],
+    "bps": true,
+    "folderMillis": 1792804122838,
+    "hash": "2820d9f9039f8f84e788b76dd48e760d3db46931ac77ebc8b5314e0ee7f3564f"
   }
 ]

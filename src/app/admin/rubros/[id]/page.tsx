@@ -3,6 +3,7 @@ import { EncabezadoPagina } from "@/components/ui";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import { obtenerRubro, rubrosPrincipales } from "@/lib/gestion/rubros";
+import { urlImagen } from "@/lib/imagenes";
 import { editarRubro, eliminarRubro } from "../actions";
 import { RubroForm } from "../rubro-form";
 
@@ -23,7 +24,7 @@ export default async function RubroPage({ params, searchParams }: PageProps<"/ad
       <RubroForm
         accion={editarRubro.bind(null, rubro.id)}
         principales={principales}
-        inicial={rubro}
+        inicial={{ ...rubro, imagen: urlImagen(rubro.imagen, rubro.actualizadoEn) }}
         soloLectura={!tienePermiso(usuario, "rubros", "editar")}
       />
       {tienePermiso(usuario, "rubros", "eliminar") && (
