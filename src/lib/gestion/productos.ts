@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, count, eq, exists, inArray, like, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
+import { ordenPorRubro as ordenRubros } from "@/lib/orden-rubros";
 import { db } from "@/db";
 import { movimientosStock, pedidoItems, productos, proveedores, rubros, variantes } from "@/db/schema";
 
@@ -13,6 +14,7 @@ export const PRODUCTOS_POR_PAGINA = 50;
 export type FiltroProductos = { busqueda?: string; rubroId?: number; pagina?: number };
 
 const padre = alias(rubros, "rubro_padre");
+const ordenPorRubro = ordenRubros(padre);
 
 function condicionFiltro({ busqueda, rubroId }: FiltroProductos): SQL | undefined {
   const condiciones: SQL[] = [];
@@ -61,7 +63,7 @@ export async function listarProductos(filtro: FiltroProductos) {
     .innerJoin(rubros, eq(rubros.id, productos.rubroId))
     .leftJoin(padre, eq(padre.id, rubros.rubroPadreId))
     .where(where)
-    .orderBy(asc(codigoPrincipal), asc(productos.id))
+    .orderBy(...ordenPorRubro, asc(codigoPrincipal), asc(productos.id))
     .limit(PRODUCTOS_POR_PAGINA)
     .offset((pagina - 1) * PRODUCTOS_POR_PAGINA);
 

@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, count, desc, eq, isNull, like, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
+import { ordenPorRubro as ordenRubros } from "@/lib/orden-rubros";
 import { db } from "@/db";
 import { pedidoItems, pedidos, productos, rubros, variantes } from "@/db/schema";
 import { ESTADOS_QUE_COMPROMETEN } from "@/lib/pedidos";
@@ -11,6 +12,7 @@ import { ESTADOS_QUE_COMPROMETEN } from "@/lib/pedidos";
 export const PRODUCTOS_POR_PAGINA_WEB = 24;
 
 const padre = alias(rubros, "rubro_padre");
+const ordenPorRubro = ordenRubros(padre);
 
 const estados = sql.join(
   ESTADOS_QUE_COMPROMETEN.map((e) => sql`${e}`),
@@ -162,7 +164,7 @@ export async function listarCatalogo(filtro: FiltroCatalogo) {
     .innerJoin(rubros, eq(rubros.id, productos.rubroId))
     .leftJoin(padre, eq(padre.id, rubros.rubroPadreId))
     .where(where)
-    .orderBy(asc(principal("codigo")), asc(productos.id))
+    .orderBy(...ordenPorRubro, asc(principal("codigo")), asc(productos.id))
     .limit(PRODUCTOS_POR_PAGINA_WEB)
     .offset((pagina - 1) * PRODUCTOS_POR_PAGINA_WEB);
 
