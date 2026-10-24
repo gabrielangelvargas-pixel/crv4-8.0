@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
 import { Aviso, BotonEnlace, Tarjeta } from "@/components/ui";
-import { usuarioActual } from "@/lib/auth/dal";
+import { requerirGestion } from "@/lib/auth/dal";
 import { configWoo, categoriasWoo, ErrorWoo, productosWoo, type ProductoWoo } from "@/lib/woocommerce";
 import { FilaDeslizable } from "../catalogo/fila-deslizable";
 import { Chip, Circulo, IconoTodos, MuyPronto } from "../catalogo/navegacion-rubros";
@@ -40,9 +39,9 @@ function TarjetaWoo({ producto: p }: { producto: ProductoWoo }) {
 }
 
 // Página de prueba: muestra el catálogo de la tienda WooCommerce sin guardarlo en CRV4.
-// Solo la ve el personal de gestión.
+// Solo la ve el personal de gestión (sin sesión, lleva al login).
 export default async function CatalogoWooPage({ searchParams }: PageProps<"/catalogo-woo">) {
-  if (!(await usuarioActual())?.accesoGestion) notFound();
+  await requerirGestion();
   const { q, categoria: slug, pagina } = await searchParams;
   const busqueda = typeof q === "string" && q.trim() ? q.trim() : undefined;
 
