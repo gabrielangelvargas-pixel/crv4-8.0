@@ -56,8 +56,9 @@ export default async function ProductoPage({ params, searchParams }: PageProps<"
           activo: v.activo,
           esPrincipal: v.esPrincipal,
           stock: formatearCantidad(v.stockActual),
+          // La foto vieja guardada en el producto es la de la variante principal.
+          imagenActual: urlImagen(v.imagen ?? (v.esPrincipal ? producto.imagen : null), producto.actualizadoEn),
         }))}
-        imagenActual={urlImagen(producto.imagen, producto.actualizadoEn)}
         soloLectura={!tienePermiso(usuario, "productos", "editar")}
       />
       {tienePermiso(usuario, "productos", "eliminar") && (

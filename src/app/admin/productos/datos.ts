@@ -13,6 +13,9 @@ export type VarianteFormulario = {
   precioOferta: string;
   activo: boolean;
   esPrincipal: boolean;
+  // Nombre del archivo nuevo dentro del formulario ("foto-3") y si se pidió quitar la actual.
+  foto?: string;
+  quitarFoto?: boolean;
 };
 
 export const NOMBRE_TIPO_VARIANTE: Record<(typeof TIPOS_VARIANTE)[number], string> = {
@@ -32,6 +35,8 @@ const varianteRecibida = z.object({
   precioOferta: z.string(),
   activo: z.boolean(),
   esPrincipal: z.boolean(),
+  foto: z.string().regex(/^foto-\d+$/).optional(),
+  quitarFoto: z.boolean().optional(),
 });
 
 export type VarianteValidada = {
@@ -45,6 +50,8 @@ export type VarianteValidada = {
   activo: boolean;
   esPrincipal: boolean;
   orden: number;
+  foto: string | null;
+  quitarFoto: boolean;
 };
 
 type Resultado = { ok: true; variantes: VarianteValidada[] } | { ok: false; error: string };
@@ -104,6 +111,8 @@ export function validarVariantes(json: string, tipo: (typeof TIPOS_VARIANTE)[num
       activo: v.activo,
       esPrincipal: v.esPrincipal,
       orden: i,
+      foto: v.foto ?? null,
+      quitarFoto: v.quitarFoto ?? false,
     });
   }
 
