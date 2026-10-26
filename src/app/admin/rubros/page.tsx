@@ -36,7 +36,7 @@ export default async function RubrosPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Link href={`/admin/rubros/${rubro.id}`} className="font-semibold text-marca hover:underline">
-                  {rubro.nombre}
+                  {rubro.orden} - {rubro.nombre}
                 </Link>
                 <Etiquetas rubro={rubro} />
               </div>
@@ -54,7 +54,7 @@ export default async function RubrosPage() {
                 {rubro.subrubros.map((sub) => (
                   <li key={sub.id} className="flex min-h-10 flex-wrap items-center gap-2 text-sm">
                     <Link href={`/admin/rubros/${sub.id}`} className="hover:text-marca hover:underline">
-                      {sub.nombre}
+                      {sub.orden} - {sub.nombre}
                     </Link>
                     <Etiquetas rubro={sub} />
                   </li>
