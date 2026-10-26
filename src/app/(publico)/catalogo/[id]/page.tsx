@@ -5,6 +5,7 @@ import { Aviso } from "@/components/ui";
 import { obtenerProductoWeb } from "@/lib/catalogo";
 import { NOMBRE_TIPO_VARIANTE } from "@/app/admin/productos/datos";
 import { Disponibilidad, Foto, Precio } from "../tarjeta-producto";
+import { FichaVariantes } from "./ficha-variantes";
 
 async function cargar(id: string) {
   const n = Number(id);
@@ -21,6 +22,12 @@ export default async function ProductoWebPage({ params }: PageProps<"/catalogo/[
   if (!producto) notFound();
   const [principal] = producto.variantes;
   const conOpciones = producto.tipoVariante !== "ninguna" && producto.variantes.length > 1;
+  const descripcionYAviso = (
+    <>
+      {producto.descripcion && <p className="text-sm whitespace-pre-line">{producto.descripcion}</p>}
+      <Aviso>Muy pronto vas a poder agregarlo al carrito y hacer el pedido desde acá.</Aviso>
+    </>
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -36,39 +43,47 @@ export default async function ProductoWebPage({ params }: PageProps<"/catalogo/[
         <Link href={`/catalogo?rubro=${producto.rubro.slug}`} className="hover:text-marca">{producto.rubro.nombre}</Link>
       </nav>
 
-      <div className="grid gap-6 md:grid-cols-2 md:gap-10">
-        <Foto imagen={producto.imagen} version={producto.actualizadoEn} className="rounded-xl border border-borde" />
-        <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{producto.nombre}</h1>
-            <p className="mt-1 text-sm text-texto-suave">Código {principal.codigo}</p>
-          </div>
-          {!conOpciones && (
+      {conOpciones ? (
+        <FichaVariantes
+          nombre={producto.nombre}
+          titulo={NOMBRE_TIPO_VARIANTE[producto.tipoVariante]}
+          codigos={producto.variantes.map((v) => v.codigo)}
+          fotos={producto.variantes.map((v) => (
+            <Foto
+              key={v.id}
+              imagen={v.imagen ?? producto.imagen}
+              version={producto.actualizadoEn}
+              className="rounded-xl border border-borde"
+            />
+          ))}
+          opciones={producto.variantes.map((v) => (
+            <span key={v.id} className="flex flex-1 items-center justify-between gap-3">
+              <span>
+                <span className="block font-medium">{v.valor}</span>
+                <Disponibilidad disponible={v.disponible} />
+              </span>
+              <Precio venta={v.precioVenta} oferta={v.precioOferta} />
+            </span>
+          ))}
+        >
+          {descripcionYAviso}
+        </FichaVariantes>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+          <Foto imagen={principal.imagen ?? producto.imagen} version={producto.actualizadoEn} className="rounded-xl border border-borde" />
+          <div className="flex flex-col gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">{producto.nombre}</h1>
+              <p className="mt-1 text-sm text-texto-suave">Código {principal.codigo}</p>
+            </div>
             <div className="flex flex-col gap-1">
               <Precio venta={principal.precioVenta} oferta={principal.precioOferta} grande />
               <Disponibilidad disponible={principal.disponible} />
             </div>
-          )}
-          {conOpciones && (
-            <section className="flex flex-col gap-2">
-              <h2 className="text-sm font-medium">{NOMBRE_TIPO_VARIANTE[producto.tipoVariante]}</h2>
-              <ul className="divide-y divide-borde rounded-xl border border-borde bg-superficie">
-                {producto.variantes.map((v) => (
-                  <li key={v.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                    <div>
-                      <p className="font-medium">{v.valor}</p>
-                      <Disponibilidad disponible={v.disponible} />
-                    </div>
-                    <Precio venta={v.precioVenta} oferta={v.precioOferta} />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {producto.descripcion && <p className="text-sm whitespace-pre-line">{producto.descripcion}</p>}
-          <Aviso>Muy pronto vas a poder agregarlo al carrito y hacer el pedido desde acá.</Aviso>
+            {descripcionYAviso}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

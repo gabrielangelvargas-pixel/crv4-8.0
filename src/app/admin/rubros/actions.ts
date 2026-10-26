@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { productos, rubros } from "@/db/schema";
+import { productos, rubros, variantes } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { obtenerRubro, slugEnUso, usoDelRubro } from "@/lib/gestion/rubros";
 import { borrarImagen, ErrorImagen, guardarImagenRubro, moverImagen } from "@/lib/imagenes";
@@ -129,12 +129,21 @@ async function moverFotosDelRubro(id: number, slug: string): Promise<void> {
     .select({ id: productos.id, imagen: productos.imagen })
     .from(productos)
     .where(and(eq(productos.rubroId, id), isNotNull(productos.imagen)));
+  const nuevaRuta = (ruta: string) => rutaFotoProducto(slug, ruta.split("/").pop()!.replace(/\.webp$/, ""));
   for (const p of conFoto) {
-    const archivo = p.imagen!.split("/").pop()!;
-    const nueva = await moverImagen(p.imagen!, rutaFotoProducto(slug, archivo.replace(/\.webp$/, "")));
+    const nueva = await moverImagen(p.imagen!, nuevaRuta(p.imagen!));
     if (nueva !== p.imagen) await db.update(productos).set({ imagen: nueva }).where(eq(productos.id, p.id));
   }
-  if (conFoto.length) revalidatePath("/admin/productos");
+  const variantesConFoto = await db
+    .select({ id: variantes.id, imagen: variantes.imagen })
+    .from(variantes)
+    .innerJoin(productos, eq(productos.id, variantes.productoId))
+    .where(and(eq(productos.rubroId, id), isNotNull(variantes.imagen)));
+  for (const v of variantesConFoto) {
+    const nueva = await moverImagen(v.imagen!, nuevaRuta(v.imagen!));
+    if (nueva !== v.imagen) await db.update(variantes).set({ imagen: nueva }).where(eq(variantes.id, v.id));
+  }
+  if (conFoto.length || variantesConFoto.length) revalidatePath("/admin/productos");
 }
 
 export async function eliminarRubro(id: number): Promise<void> {

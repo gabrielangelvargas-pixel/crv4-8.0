@@ -28,12 +28,34 @@ type Props = {
   proveedores: { id: number; nombre: string }[] | null;
   verCosto: boolean;
   inicial?: ProductoInicial;
-  variantesIniciales?: (VarianteFormulario & { stock?: string })[];
-  imagenActual?: string | null;
+  variantesIniciales?: (VarianteFormulario & { stock?: string; imagenActual?: string | null })[];
   soloLectura?: boolean;
 };
 
-type Fila = VarianteFormulario & { clave: number; stock?: string };
+type Fila = VarianteFormulario & {
+  clave: number;
+  stock?: string;
+  imagenActual?: string | null;
+  archivo?: File | null;
+  vistaPrevia?: string | null;
+};
+
+// Antes de subir, la foto se achica en el navegador (el servidor la deja en 500×500):
+// así se pueden mandar varias juntas sin pasar el límite del formulario.
+async function achicarFoto(archivo: File): Promise<File> {
+  try {
+    const imagen = await createImageBitmap(archivo);
+    const escala = Math.min(1, 1200 / Math.max(imagen.width, imagen.height));
+    const lienzo = document.createElement("canvas");
+    lienzo.width = Math.round(imagen.width * escala);
+    lienzo.height = Math.round(imagen.height * escala);
+    lienzo.getContext("2d")!.drawImage(imagen, 0, 0, lienzo.width, lienzo.height);
+    const blob = await new Promise<Blob | null>((listo) => lienzo.toBlob(listo, "image/webp", 0.92));
+    return blob && blob.size < archivo.size ? new File([blob], "foto.webp", { type: "image/webp" }) : archivo;
+  } catch {
+    return archivo;
+  }
+}
 
 const ETIQUETA_VALOR: Record<Exclude<TipoVariante, "ninguna">, [string, string]> = {
   color: ["Color", "Rojo"],
@@ -63,7 +85,6 @@ export function ProductoForm({
   verCosto,
   inicial,
   variantesIniciales,
-  imagenActual = null,
   soloLectura = false,
 }: Props) {
   const [estado, enviar, enviando] = useActionState(accion, undefined);
@@ -74,9 +95,7 @@ export function ProductoForm({
       : [filaVacia(true)],
   );
 
-  const [vistaPrevia, setVistaPrevia] = useState<string | null>(null);
-  const [quitarImagen, setQuitarImagen] = useState(false);
-  const imagenMostrada = vistaPrevia ?? (quitarImagen ? null : imagenActual);
+  const [preparando, setPreparando] = useState(false);
 
   const conVariantes = tipo !== "ninguna";
   const [etiquetaValor, ejemploValor] = conVariantes ? ETIQUETA_VALOR[tipo] : ["", ""];
@@ -98,9 +117,12 @@ export function ProductoForm({
   }
 
   // Se envía a mano para que React no vacíe el formulario si el servidor devuelve un error.
-  function alEnviar(evento: FormEvent<HTMLFormElement>) {
+  async function alEnviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const datos = new FormData(evento.currentTarget);
+    setPreparando(true);
+    for (const f of filas) if (f.archivo) datos.set(`foto-${f.clave}`, await achicarFoto(f.archivo));
+    setPreparando(false);
     const lista: VarianteFormulario[] = filas.map((f) => ({
       id: f.id,
       valor: f.valor,
@@ -111,6 +133,8 @@ export function ProductoForm({
       precioOferta: f.precioOferta,
       activo: f.activo,
       esPrincipal: f.esPrincipal,
+      foto: f.archivo ? `foto-${f.clave}` : undefined,
+      quitarFoto: f.quitarFoto,
     }));
     datos.set("variantes", JSON.stringify(lista));
     startTransition(() => enviar(datos));
@@ -168,49 +192,12 @@ export function ProductoForm({
           </div>
         </section>
 
-        <section className="flex flex-col gap-4 rounded-xl border border-borde bg-superficie p-4 sm:flex-row sm:items-center sm:p-6 lg:max-w-4xl">
-          <div className="flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-borde bg-white">
-            {imagenMostrada ? (
-              // eslint-disable-next-line @next/next/no-img-element -- vista previa local o foto ya optimizada
-              <img src={imagenMostrada} alt="Foto del producto" className="size-full object-contain" />
-            ) : (
-              <span className="px-2 text-center text-xs text-texto-suave">Sin foto</span>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <h2 className="font-semibold">Foto</h2>
-            <input
-              type="file"
-              name="imagen"
-              accept="image/*"
-              aria-label="Elegir foto"
-              onChange={(e) => {
-                const archivo = e.target.files?.[0];
-                setVistaPrevia(archivo ? URL.createObjectURL(archivo) : null);
-                if (archivo) setQuitarImagen(false);
-              }}
-              className="text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border file:border-borde file:bg-superficie file:px-4 file:text-sm file:font-medium hover:file:bg-fondo"
-            />
-            <p className="text-xs text-texto-suave">
-              Se ajusta a 500×500 y se guarda en WEBP con el código de la variante principal.
-            </p>
-            {imagenActual && !vistaPrevia && (
-              <Casilla
-                etiqueta="Quitar la foto"
-                name="quitarImagen"
-                checked={quitarImagen}
-                onChange={(e) => setQuitarImagen(e.target.checked)}
-              />
-            )}
-          </div>
-        </section>
-
         <section className="flex flex-col gap-3 lg:max-w-4xl">
           <div>
             <h2 className="font-semibold">{conVariantes ? `Variantes por ${etiquetaValor.toLowerCase()}` : "Código y precios"}</h2>
             <p className="text-sm text-texto-suave">
               {conVariantes
-                ? "Cada variante tiene su propio código de barras, precio y stock."
+                ? "Cada variante tiene su propia foto, código de barras, precio y stock."
                 : "El código es el interno y el de barras (hasta 13 caracteres)."}
             </p>
           </div>
@@ -251,6 +238,7 @@ export function ProductoForm({
                     )}
                   </div>
                 )}
+                <FotoVariante fila={f} cambiar={(cambios) => cambiar(f.clave, cambios)} />
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <Campo
                     etiqueta="Código / código de barras"
@@ -326,11 +314,47 @@ export function ProductoForm({
         <MensajeError>{estado?.error}</MensajeError>
       </div>
       <div className="flex items-center gap-4">
-        {!soloLectura && <BotonPrincipal disabled={enviando}>{enviando ? "Guardando…" : "Guardar"}</BotonPrincipal>}
+        {!soloLectura && <BotonPrincipal disabled={preparando || enviando}>{preparando || enviando ? "Guardando…" : "Guardar"}</BotonPrincipal>}
         <Link href="/admin/productos" className="text-sm text-texto-suave hover:text-marca">
           Volver
         </Link>
       </div>
     </form>
+  );
+}
+
+function FotoVariante({ fila: f, cambiar }: { fila: Fila; cambiar: (cambios: Partial<Fila>) => void }) {
+  const mostrada = f.vistaPrevia ?? (f.quitarFoto ? null : f.imagenActual);
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-borde bg-white">
+        {mostrada ? (
+          // eslint-disable-next-line @next/next/no-img-element -- vista previa local o foto ya optimizada
+          <img src={mostrada} alt={`Foto ${f.valor}`.trim()} className="size-full object-contain" />
+        ) : (
+          <span className="px-2 text-center text-xs text-texto-suave">Sin foto</span>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-col gap-2">
+        <input
+          type="file"
+          accept="image/*"
+          aria-label="Elegir foto"
+          onChange={(e) => {
+            const archivo = e.target.files?.[0] ?? null;
+            cambiar({ archivo, vistaPrevia: archivo ? URL.createObjectURL(archivo) : null, quitarFoto: false });
+          }}
+          className="max-w-full text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border file:border-borde file:bg-superficie file:px-4 file:text-sm file:font-medium hover:file:bg-fondo"
+        />
+        <p className="text-xs text-texto-suave">Se ajusta a 500×500 y se guarda en WEBP con el código de la variante.</p>
+        {f.imagenActual && !f.archivo && (
+          <Casilla
+            etiqueta="Quitar la foto"
+            checked={f.quitarFoto ?? false}
+            onChange={(e) => cambiar({ quitarFoto: e.target.checked })}
+          />
+        )}
+      </div>
+    </div>
   );
 }

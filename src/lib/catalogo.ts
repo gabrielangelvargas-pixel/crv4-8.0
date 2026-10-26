@@ -32,6 +32,11 @@ const principal = (columna: string) =>
   sql.raw(`(select v.${columna} from variantes v where v.producto_id = productos.id and v.activo = true
     order by v.es_principal desc, v.orden, v.id limit 1)`);
 
+// Foto de la tarjeta: la de la variante principal (o la vieja del producto, que es la de la
+// principal); si no tiene, la primera variante activa con foto.
+const fotoPrincipal = sql<string | null>`coalesce(${principal("imagen")}, ${productos.imagen}, ${sql.raw(`(select v.imagen from variantes v
+  where v.producto_id = productos.id and v.activo = true and v.imagen is not null order by v.orden, v.id limit 1)`)})`;
+
 // Un rubro se ve si está activo y visible, y su rubro principal también.
 const rubroVisible = and(
   eq(rubros.activo, true),
@@ -152,7 +157,7 @@ export async function listarCatalogo(filtro: FiltroCatalogo) {
     .select({
       id: productos.id,
       nombre: productos.nombre,
-      imagen: productos.imagen,
+      imagen: fotoPrincipal,
       actualizadoEn: productos.actualizadoEn,
       rubro: rubros.nombre,
       precioVenta: sql<string>`${principal("precio_venta")}`,
@@ -184,7 +189,7 @@ export async function obtenerProductoWeb(id: number) {
       id: productos.id,
       nombre: productos.nombre,
       descripcion: productos.descripcion,
-      imagen: productos.imagen,
+      imagen: fotoPrincipal,
       actualizadoEn: productos.actualizadoEn,
       tipoVariante: productos.tipoVariante,
       rubro: { nombre: rubros.nombre, slug: rubros.slug },
@@ -202,6 +207,7 @@ export async function obtenerProductoWeb(id: number) {
       id: variantes.id,
       valor: variantes.valor,
       codigo: variantes.codigo,
+      imagen: variantes.imagen,
       precioVenta: variantes.precioVenta,
       precioOferta: variantes.precioOferta,
       disponible: sql<string>`${variantes.stockActual} - ${comprometidoDe(sql`${variantes}.${sql.identifier("id")}`)}`,

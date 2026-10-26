@@ -52,7 +52,7 @@ Reglas:
 | rubro_id | FK a Rubro | siempre un subrubro |
 | proveedor_id | FK a Proveedor | |
 | tipo_variante | ninguna / color / tamaño / presentación | una sola dimensión por producto (confirmado) |
-| imagen | texto | ruta dentro de la carpeta de imágenes, ej. `productos/vasos/7790895000997.webp` (ver reglas) |
+| imagen | texto, en desuso | foto vieja de la variante principal; al guardar el producto pasa a la variante y queda vacía |
 | visible_web | booleano | |
 | destacado | booleano | portada |
 | activo | booleano | |
@@ -70,7 +70,7 @@ Reglas:
 | precio_venta | decimal | |
 | precio_oferta | decimal, opcional | vacío = sin oferta |
 | stock_actual | decimal | |
-| imagen | texto, opcional | si está vacía se usa la del producto |
+| imagen | texto, opcional | ruta dentro de la carpeta de imágenes, ej. `productos/vasos/7790895000997.webp` (ver reglas) |
 | es_principal | booleano | la que se muestra por defecto |
 | orden | entero | |
 | activo | booleano | |
@@ -78,7 +78,8 @@ Reglas:
 Reglas:
 - Todo producto tiene al menos una variante; sin variantes reales tiene una sola ("Única"). Así pedidos, ventas y stock siempre apuntan a una variante.
 - La URL pública usa el `codigo` de la variante principal; en la página se elige la variante.
-- La foto del producto se ajusta a 500x500 (sin recortar, con fondo blanco), se convierte a WEBP y se guarda fuera de lo publicado (`CARPETA_IMAGENES`, por defecto `~/imagenes`) en `productos/<dirección web del subrubro>/<código de la variante principal>.webp`. Si cambia el código, el subrubro del producto o la dirección web del subrubro, el archivo se mueve.
+- Cada variante tiene su foto: se ajusta a 500x500 (sin recortar, con fondo blanco), se convierte a WEBP y se guarda fuera de lo publicado (`CARPETA_IMAGENES`, por defecto `~/imagenes`) en `productos/<dirección web del subrubro>/<código de la variante>.webp`. Si cambia el código, el subrubro del producto o la dirección web del subrubro, el archivo se mueve.
+- La tarjeta del catálogo usa la foto de la variante principal (o, si no tiene, la de la primera variante con foto). En la ficha, al elegir una variante se muestra su foto; si no tiene, la del producto.
 
 ## 5. Proveedor (cerrada, v1)
 

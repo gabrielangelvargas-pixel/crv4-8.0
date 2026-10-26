@@ -39,6 +39,14 @@ function condicionFiltro({ busqueda, rubroId }: FiltroProductos): SQL | undefine
 // Código de la variante principal: con él se identifica y se ordena el producto.
 const codigoPrincipal = sql<string | null>`(select ${variantes.codigo} from ${variantes} where ${variantes.productoId} = ${productos.id} order by ${variantes.esPrincipal} desc, ${variantes.orden}, ${variantes.id} limit 1)`;
 
+// Foto que representa al producto: la de la variante principal (o la vieja guardada en el
+// producto, que es la de la principal); si no tiene, la primera variante con foto.
+const fotoPrincipal = sql<string | null>`coalesce(
+  (select ${variantes.imagen} from ${variantes} where ${variantes.productoId} = ${productos.id} order by ${variantes.esPrincipal} desc, ${variantes.orden}, ${variantes.id} limit 1),
+  ${productos.imagen},
+  (select ${variantes.imagen} from ${variantes} where ${variantes.productoId} = ${productos.id} and ${variantes.imagen} is not null order by ${variantes.orden}, ${variantes.id} limit 1)
+)`;
+
 export async function listarProductos(filtro: FiltroProductos) {
   const pagina = Math.max(1, filtro.pagina ?? 1);
   const where = condicionFiltro(filtro);
@@ -50,7 +58,7 @@ export async function listarProductos(filtro: FiltroProductos) {
       activo: productos.activo,
       visibleWeb: productos.visibleWeb,
       destacado: productos.destacado,
-      imagen: productos.imagen,
+      imagen: fotoPrincipal,
       actualizadoEn: productos.actualizadoEn,
       rubro: rubros.nombre,
       rubroPadre: padre.nombre,

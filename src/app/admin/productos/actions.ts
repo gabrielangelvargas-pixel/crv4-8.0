@@ -9,7 +9,7 @@ import { productos, TIPOS_VARIANTE, variantes } from "@/db/schema";
 import { requerirPermiso } from "@/lib/auth/dal";
 import { tienePermiso } from "@/lib/auth/permisos";
 import type { UsuarioSesion } from "@/lib/auth/session";
-import { codigosEnUso, obtenerProducto, variantesConHistorial, type ProductoConVariantes } from "@/lib/gestion/productos";
+import { codigosEnUso, obtenerProducto, variantesConHistorial, type ProductoConVariantes, type Variante } from "@/lib/gestion/productos";
 import { obtenerRubro } from "@/lib/gestion/rubros";
 import { borrarImagen, ErrorImagen, guardarImagenProducto, moverImagen } from "@/lib/imagenes";
 import { rutaFotoProducto } from "@/lib/rutas-imagen";
@@ -73,8 +73,9 @@ async function leerFormulario(form: FormData, usuario: UsuarioSesion, actual?: P
   return { ok: true, producto: datos.data, variantes: lista.variantes, rubroSlug: rubro.slug };
 }
 
-function filaVariante(v: VarianteValidada) {
+function filaVariante(v: VarianteValidada, imagen: string | null) {
   return {
+    imagen,
     valor: v.valor,
     codigo: v.codigo,
     codigoProveedor: v.codigoProveedor,
@@ -87,51 +88,71 @@ function filaVariante(v: VarianteValidada) {
   };
 }
 
-function archivoSubido(form: FormData): File | null {
-  const archivo = form.get("imagen");
-  return archivo instanceof File && archivo.size > 0 ? archivo : null;
-}
-
-const codigoPrincipal = (variantesValidadas: VarianteValidada[]) =>
-  (variantesValidadas.find((v) => v.esPrincipal) ?? variantesValidadas[0]).codigo;
-
-// La foto va en la carpeta del rubro con el código de la variante principal:
-// "productos/vasos/7790895000997.webp".
-async function resolverImagen(
+// Cada variante tiene su foto, en la carpeta del subrubro y con su código:
+// "productos/vasos/7790895000997.webp". Las fotos viejas guardadas en el producto
+// son de la variante principal y pasan a ella al guardar.
+async function resolverFotos(
   form: FormData,
-  variantesValidadas: VarianteValidada[],
+  lista: VarianteValidada[],
   rubroSlug: string,
-  anterior: string | null,
-): Promise<{ ok: true; imagen: string | null } | { ok: false; error: string }> {
-  const ruta = rutaFotoProducto(rubroSlug, codigoPrincipal(variantesValidadas));
-  const archivo = archivoSubido(form);
-  try {
-    if (archivo) {
-      await guardarImagenProducto(archivo, ruta);
-      if (anterior && anterior !== ruta) await borrarImagen(anterior);
-      return { ok: true, imagen: ruta };
+  actual?: ProductoConVariantes,
+): Promise<{ ok: true; fotos: (string | null)[]; sobrantes: string[] } | { ok: false; error: string }> {
+  const guardadas = new Map<number | undefined, Variante>(actual?.variantes.map((v) => [v.id, v]));
+  const principalAnterior = actual?.variantes.find((v) => v.esPrincipal)?.id;
+  let fotoDelProducto = actual?.imagen ?? null;
+  const fotos: (string | null)[] = [];
+  const descartadas: string[] = [];
+
+  for (const v of lista) {
+    const guardada = v.id !== undefined ? guardadas.get(v.id) : undefined;
+    let anterior = guardada?.imagen ?? null;
+    if (!anterior && fotoDelProducto && guardada && guardada.id === principalAnterior) {
+      anterior = fotoDelProducto;
+      fotoDelProducto = null;
     }
-    if (form.get("quitarImagen") === "on") {
-      await borrarImagen(anterior);
-      return { ok: true, imagen: null };
+    const ruta = rutaFotoProducto(rubroSlug, v.codigo);
+    const subida = v.foto ? form.get(v.foto) : null;
+    const archivo = subida instanceof File && subida.size > 0 ? subida : null;
+    try {
+      if (archivo) {
+        await guardarImagenProducto(archivo, ruta);
+        if (anterior && anterior !== ruta) descartadas.push(anterior);
+        fotos.push(ruta);
+      } else if (v.quitarFoto) {
+        if (anterior) descartadas.push(anterior);
+        fotos.push(null);
+      } else {
+        fotos.push(anterior ? await moverImagen(anterior, ruta) : null);
+      }
+    } catch (error) {
+      if (error instanceof ErrorImagen) {
+        const nombre = lista.length > 1 ? ` de ${v.valor}` : "";
+        return { ok: false, error: `Foto${nombre}: ${error.message}` };
+      }
+      throw error;
     }
-    return { ok: true, imagen: anterior ? await moverImagen(anterior, ruta) : null };
-  } catch (error) {
-    if (error instanceof ErrorImagen) return { ok: false, error: error.message };
-    throw error;
   }
+
+  // Fotos que ya no usa nadie: las reemplazadas, las de variantes quitadas y la vieja del producto.
+  const conservadas = new Set(lista.map((v) => v.id));
+  for (const v of actual?.variantes ?? []) if (!conservadas.has(v.id) && v.imagen) descartadas.push(v.imagen);
+  if (fotoDelProducto) descartadas.push(fotoDelProducto);
+  const enUso = new Set(fotos);
+  return { ok: true, fotos, sobrantes: descartadas.filter((ruta) => !enUso.has(ruta)) };
 }
 
 export async function crearProducto(_prev: EstadoFormulario, form: FormData): Promise<EstadoFormulario> {
   const usuario = await requerirPermiso("productos", "crear");
   const datos = await leerFormulario(form, usuario);
   if (!datos.ok) return { error: datos.error };
-  const imagen = await resolverImagen(form, datos.variantes, datos.rubroSlug, null);
-  if (!imagen.ok) return { error: imagen.error };
+  const fotos = await resolverFotos(form, datos.variantes, datos.rubroSlug);
+  if (!fotos.ok) return { error: fotos.error };
 
   await db.transaction(async (tx) => {
-    const [{ id }] = await tx.insert(productos).values({ ...datos.producto, imagen: imagen.imagen }).$returningId();
-    await tx.insert(variantes).values(datos.variantes.map((v) => ({ ...filaVariante(v), productoId: id })));
+    const [{ id }] = await tx.insert(productos).values({ ...datos.producto, imagen: null }).$returningId();
+    await tx
+      .insert(variantes)
+      .values(datos.variantes.map((v, i) => ({ ...filaVariante(v, fotos.fotos[i]), productoId: id })));
   });
   revalidatePath("/admin/productos");
   redirect("/admin/productos");
@@ -155,21 +176,23 @@ export async function editarProducto(
     const nombre = quitadas.find((v) => v.id === conHistorial[0])?.valor;
     return { error: `La variante ${nombre} ya tiene ventas o movimientos de stock: desactívala en vez de quitarla` };
   }
-  const imagen = await resolverImagen(form, datos.variantes, datos.rubroSlug, actual.imagen);
-  if (!imagen.ok) return { error: imagen.error };
+  const fotos = await resolverFotos(form, datos.variantes, datos.rubroSlug, actual);
+  if (!fotos.ok) return { error: fotos.error };
 
   await db.transaction(async (tx) => {
-    await tx.update(productos).set({ ...datos.producto, imagen: imagen.imagen }).where(eq(productos.id, id));
+    await tx.update(productos).set({ ...datos.producto, imagen: null }).where(eq(productos.id, id));
     if (quitadas.length) await tx.delete(variantes).where(inArray(variantes.id, quitadas.map((v) => v.id)));
     // Primero se liberan los códigos de las variantes editadas para poder intercambiarlos.
     for (const v of datos.variantes) {
       if (v.id !== undefined) await tx.update(variantes).set({ codigo: `~${v.id}` }).where(eq(variantes.id, v.id));
     }
-    for (const v of datos.variantes) {
-      if (v.id !== undefined) await tx.update(variantes).set(filaVariante(v)).where(eq(variantes.id, v.id));
-      else await tx.insert(variantes).values({ ...filaVariante(v), productoId: id });
+    for (const [i, v] of datos.variantes.entries()) {
+      const fila = filaVariante(v, fotos.fotos[i]);
+      if (v.id !== undefined) await tx.update(variantes).set(fila).where(eq(variantes.id, v.id));
+      else await tx.insert(variantes).values({ ...fila, productoId: id });
     }
   });
+  for (const ruta of fotos.sobrantes) await borrarImagen(ruta);
   revalidatePath("/admin/productos");
   redirect("/admin/productos");
 }
@@ -184,6 +207,7 @@ export async function eliminarProducto(id: number): Promise<void> {
 
   await db.delete(productos).where(eq(productos.id, id));
   await borrarImagen(producto.imagen);
+  for (const v of producto.variantes) await borrarImagen(v.imagen);
   revalidatePath("/admin/productos");
   redirect("/admin/productos");
 }
