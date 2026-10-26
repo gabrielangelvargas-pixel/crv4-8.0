@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodificarHtml } from "@/lib/woo-texto";
+import { decodificarHtml, textoDeHtml } from "@/lib/woo-texto";
 
 describe("decodificarHtml", () => {
   it("decodifica entidades con nombre y numéricas", () => {
@@ -7,5 +7,16 @@ describe("decodificarHtml", () => {
   });
   it("deja intactas las que no conoce", () => {
     expect(decodificarHtml("&raro; sigue")).toBe("&raro; sigue");
+  });
+});
+
+describe("textoDeHtml", () => {
+  it("pasa párrafos, saltos y listas a texto", () => {
+    expect(textoDeHtml("<p>Aros de <strong>plata</strong>&nbsp;925</p>\n<ul><li>Uno</li><li>Dos</li></ul><p>Fin<br/>línea</p>")).toBe(
+      "Aros de plata 925\n\n• Uno\n• Dos\nFin\nlínea",
+    );
+  });
+  it("descarta scripts y estilos", () => {
+    expect(textoDeHtml("<script>alert(1)</script><style>p{}</style>Hola")).toBe("Hola");
   });
 });

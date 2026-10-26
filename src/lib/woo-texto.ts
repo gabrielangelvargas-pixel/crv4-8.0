@@ -10,3 +10,17 @@ export function decodificarHtml(texto: string): string {
     return ENTIDADES[codigo.toLowerCase()] ?? entera;
   });
 }
+
+// Las descripciones de WooCommerce vienen en HTML: se muestran como texto con sus saltos de línea.
+export function textoDeHtml(html: string): string {
+  const sinEtiquetas = html
+    .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+    .replace(/<li\b[^>]*>/gi, "• ")
+    .replace(/<[^>]*>/g, "");
+  return decodificarHtml(sinEtiquetas)
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

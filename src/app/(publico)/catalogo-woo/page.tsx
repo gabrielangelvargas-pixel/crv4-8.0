@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Aviso, BotonEnlace, Tarjeta } from "@/components/ui";
 import { configWoo, categoriasWoo, ErrorWoo, productosWoo, type ProductoWoo } from "@/lib/woocommerce";
 import { FilaDeslizable } from "../catalogo/fila-deslizable";
@@ -27,13 +28,13 @@ function TarjetaWoo({ producto: p }: { producto: ProductoWoo }) {
       </div>
     </>
   );
-  const clase = "flex flex-col overflow-hidden rounded-xl border border-borde bg-superficie transition-shadow hover:shadow-md";
-  return p.enlace ? (
-    <a href={p.enlace} target="_blank" rel="noopener noreferrer" className={clase}>
+  return (
+    <Link
+      href={`/catalogo-woo/${p.id}`}
+      className="flex flex-col overflow-hidden rounded-xl border border-borde bg-superficie transition-shadow hover:shadow-md"
+    >
       {contenido}
-    </a>
-  ) : (
-    <div className={clase}>{contenido}</div>
+    </Link>
   );
 }
 
@@ -85,7 +86,7 @@ export default async function CatalogoWooPage({ searchParams }: PageProps<"/cata
 
   return (
     <div className="flex flex-col gap-4">
-      <Aviso>Página de prueba: catálogo leído de tu tienda WooCommerce. Se actualiza solo cada 15 minutos.</Aviso>
+      <Aviso>Página de prueba: catálogo leído de tu tienda WooCommerce. Se actualiza solo cada 5 minutos.</Aviso>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{elegida?.nombre ?? "Catálogo WooCommerce"}</h1>
         <p className="mt-1 text-sm text-texto-suave">
