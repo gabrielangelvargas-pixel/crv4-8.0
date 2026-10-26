@@ -60,7 +60,7 @@ export default async function Inicio() {
           <p className="mt-3 max-w-lg text-base text-blue-100 md:text-lg">
             Consulta el catálogo, arma tu pedido y nosotros lo preparamos.
           </p>
-          <BotonEnlace href="/catalogo" variante="secundario" className="mt-6 w-full sm:w-auto">
+          <BotonEnlace href="/catalogo-woo" variante="secundario" className="mt-6 w-full sm:w-auto">
             Ver catálogo
           </BotonEnlace>
         </section>
