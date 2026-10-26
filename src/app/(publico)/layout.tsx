@@ -5,7 +5,7 @@ import { NavegacionInferior, NavegacionSuperior } from "./navegacion";
 
 function Buscador({ className }: { className?: string }) {
   return (
-    <form action="/catalogo" role="search" className={className}>
+    <form action="/catalogo-woo" role="search" className={className}>
       <label className="relative block">
         <span className="sr-only">Buscar productos</span>
         <IconoBuscar className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-texto-suave" />

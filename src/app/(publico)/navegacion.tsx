@@ -6,7 +6,7 @@ import { IconoCarrito, IconoCatalogo, IconoInicio, IconoUsuario } from "@/compon
 
 const ITEMS = [
   { href: "/", titulo: "Inicio", Icono: IconoInicio },
-  { href: "/catalogo", titulo: "Catálogo", Icono: IconoCatalogo },
+  { href: "/catalogo-woo", titulo: "Catálogo", Icono: IconoCatalogo },
   { href: "/carrito", titulo: "Carrito", Icono: IconoCarrito },
   { href: "/cuenta", titulo: "Mi cuenta", Icono: IconoUsuario },
 ];

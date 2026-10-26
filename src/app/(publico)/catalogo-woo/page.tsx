@@ -5,7 +5,7 @@ import { FilaDeslizable } from "../catalogo/fila-deslizable";
 import { Chip, Circulo, IconoTodos, MuyPronto } from "../catalogo/navegacion-rubros";
 import { Disponibilidad, Precio } from "../catalogo/tarjeta-producto";
 
-export const metadata = { title: "Catálogo WooCommerce (prueba) · CRV4 Mayorista", robots: { index: false } };
+export const metadata = { title: "Catálogo · CRV4 Mayorista", robots: { index: false } };
 
 function TarjetaWoo({ producto: p }: { producto: ProductoWoo }) {
   const contenido = (
@@ -39,7 +39,7 @@ function TarjetaWoo({ producto: p }: { producto: ProductoWoo }) {
 }
 
 // Página de prueba: muestra el catálogo de la tienda WooCommerce sin guardarlo en CRV4.
-// Es pública: la puede ver cualquier visitante.
+// Es pública y es el catálogo al que llevan el menú y el buscador de la web.
 export default async function CatalogoWooPage({ searchParams }: PageProps<"/catalogo-woo">) {
   const { q, categoria: slug, pagina } = await searchParams;
   const busqueda = typeof q === "string" && q.trim() ? q.trim() : undefined;
@@ -48,7 +48,7 @@ export default async function CatalogoWooPage({ searchParams }: PageProps<"/cata
   if (!config) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Catálogo WooCommerce (prueba)</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Catálogo</h1>
         <Aviso tipo="alerta">
           Faltan configurar las variables WOO_URL, WOO_CLAVE y WOO_SECRETO en Hostinger (la dirección tiene que empezar con https://).
         </Aviso>
@@ -67,7 +67,7 @@ export default async function CatalogoWooPage({ searchParams }: PageProps<"/cata
     if (!(error instanceof ErrorWoo)) throw error;
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Catálogo WooCommerce (prueba)</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Catálogo</h1>
         <Aviso tipo="error">{error.message}</Aviso>
       </div>
     );
@@ -86,9 +86,8 @@ export default async function CatalogoWooPage({ searchParams }: PageProps<"/cata
 
   return (
     <div className="flex flex-col gap-4">
-      <Aviso>Página de prueba: catálogo leído de tu tienda WooCommerce. Se actualiza solo cada 5 minutos.</Aviso>
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{elegida?.nombre ?? "Catálogo WooCommerce"}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{elegida?.nombre ?? "Catálogo"}</h1>
         <p className="mt-1 text-sm text-texto-suave">
           {busqueda ? `Resultados para “${busqueda}” · ` : ""}
           {total === 1 ? "1 producto" : `${total} productos`}
@@ -100,7 +99,7 @@ export default async function CatalogoWooPage({ searchParams }: PageProps<"/cata
         <input
           name="q"
           defaultValue={busqueda}
-          placeholder="Buscar en la tienda"
+          placeholder="Buscar productos"
           className="min-h-11 flex-1 rounded-lg border border-borde bg-superficie px-3 text-base"
         />
         <BotonEnlace variante="secundario" href={elegida ? `/catalogo-woo?categoria=${elegida.slug}` : "/catalogo-woo"}>

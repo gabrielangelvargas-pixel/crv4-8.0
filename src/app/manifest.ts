@@ -23,7 +23,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: iconoMaskable.src, sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
-      { name: "Catálogo", url: "/catalogo" },
+      { name: "Catálogo", url: "/catalogo-woo" },
       { name: "Gestión", url: "/admin" },
     ],
   };
