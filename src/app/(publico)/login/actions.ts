@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
@@ -8,6 +8,7 @@ import { roles, usuarios } from "@/db/schema";
 import { verificarPassword } from "@/lib/auth/password";
 import { destinoSeguro, inicioSegun } from "@/lib/auth/roles";
 import { cerrarSesion, crearSesion } from "@/lib/auth/session";
+import { normalizarTelefono } from "@/lib/texto";
 
 // Se devuelve el usuario tipeado para no borrarlo si el login falla.
 export type EstadoLogin = { error?: string; nombreUsuario?: string } | undefined;
@@ -37,7 +38,9 @@ export async function iniciarSesion(_prev: EstadoLogin, form: FormData): Promise
     })
     .from(usuarios)
     .innerJoin(roles, eq(usuarios.rolId, roles.id))
-    .where(eq(usuarios.nombreUsuario, datos.data.nombreUsuario))
+    // Los clientes entran con el teléfono: se acepta escrito con espacios o guiones.
+    .where(inArray(usuarios.nombreUsuario, [datos.data.nombreUsuario, normalizarTelefono(datos.data.nombreUsuario) ?? datos.data.nombreUsuario]))
+    .orderBy(sql`${usuarios.nombreUsuario} = ${datos.data.nombreUsuario} desc`)
     .limit(1);
 
   const valido =

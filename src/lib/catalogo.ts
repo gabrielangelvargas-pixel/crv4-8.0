@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq, isNull, like, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, like, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { ordenPorRubro as ordenRubros } from "@/lib/orden-rubros";
 import { db } from "@/db";
@@ -217,6 +217,37 @@ export async function obtenerProductoWeb(id: number) {
     .orderBy(sql`${variantes.esPrincipal} desc`, asc(variantes.orden), asc(variantes.id));
 
   return { ...producto, variantes: lista.map((v) => ({ ...v, disponible: Number(v.disponible) > 0 })) };
+}
+
+// Variantes del carrito que se pueden pedir (activas y de productos a la vista), con los
+// precios de la base. El costo solo se usa al registrar el pedido, nunca va al navegador.
+export async function variantesParaPedido(ids: number[]) {
+  if (ids.length === 0) return [];
+  const filas = await db
+    .select({
+      varianteId: variantes.id,
+      productoId: productos.id,
+      producto: productos.nombre,
+      tipoVariante: productos.tipoVariante,
+      valor: variantes.valor,
+      codigo: variantes.codigo,
+      imagen: sql<string | null>`coalesce(${variantes.imagen}, ${fotoPrincipal})`,
+      actualizadoEn: productos.actualizadoEn,
+      precioVenta: variantes.precioVenta,
+      precioOferta: variantes.precioOferta,
+      precioCosto: variantes.precioCosto,
+      disponible: sql<string>`${variantes.stockActual} - ${comprometidoDe(sql`${variantes}.${sql.identifier("id")}`)}`,
+    })
+    .from(variantes)
+    .innerJoin(productos, eq(productos.id, variantes.productoId))
+    .innerJoin(rubros, eq(rubros.id, productos.rubroId))
+    .leftJoin(padre, eq(padre.id, rubros.rubroPadreId))
+    .where(and(inArray(variantes.id, ids), eq(variantes.activo, true), productoVisible));
+  return filas.map((f) => ({
+    ...f,
+    variante: f.tipoVariante === "ninguna" ? null : f.valor,
+    disponible: Number(f.disponible) > 0,
+  }));
 }
 
 // Precio que paga el cliente: la oferta si existe y es menor.

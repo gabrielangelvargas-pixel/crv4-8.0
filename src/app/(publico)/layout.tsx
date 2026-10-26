@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { IconoBuscar, IconoCarrito, IconoUsuario } from "@/components/iconos";
 import { usuarioActual } from "@/lib/auth/dal";
+import { ContadorCarrito } from "./carrito/contador-carrito";
 import { NavegacionInferior, NavegacionSuperior } from "./navegacion";
 
 function Buscador({ className }: { className?: string }) {
@@ -46,9 +47,10 @@ export default async function PublicoLayout({ children }: LayoutProps<"/">) {
             <Link
               href="/carrito"
               aria-label="Carrito"
-              className="flex size-11 items-center justify-center rounded-full text-texto hover:bg-fondo hover:text-marca"
+              className="relative flex size-11 items-center justify-center rounded-full text-texto hover:bg-fondo hover:text-marca"
             >
               <IconoCarrito />
+              <ContadorCarrito />
             </Link>
             <Link
               href="/cuenta"

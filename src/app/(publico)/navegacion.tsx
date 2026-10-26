@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconoCarrito, IconoCatalogo, IconoInicio, IconoUsuario } from "@/components/iconos";
+import { ContadorCarrito } from "./carrito/contador-carrito";
 
 const ITEMS = [
   { href: "/", titulo: "Inicio", Icono: IconoInicio },
@@ -33,7 +34,10 @@ export function NavegacionInferior() {
               aria-current={activo(pathname, href) ? "page" : undefined}
               className="group flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs text-texto aria-[current=page]:font-semibold aria-[current=page]:text-marca"
             >
-              <Icono className="box-content size-6 rounded-full px-3 py-0.5 group-aria-[current=page]:bg-marca-suave" />
+              <span className="relative">
+                <Icono className="box-content size-6 rounded-full px-3 py-0.5 group-aria-[current=page]:bg-marca-suave" />
+                {href === "/carrito" && <ContadorCarrito />}
+              </span>
               {titulo}
             </Link>
           </li>

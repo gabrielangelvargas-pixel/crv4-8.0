@@ -11,7 +11,7 @@ export function LoginForm({ next }: { next?: string }) {
     <form action={accion} className="flex flex-col gap-4">
       {next && <input type="hidden" name="next" value={next} />}
       <Campo
-        etiqueta="Usuario"
+        etiqueta="Usuario o teléfono"
         name="nombreUsuario"
         defaultValue={estado?.nombreUsuario}
         autoComplete="username"

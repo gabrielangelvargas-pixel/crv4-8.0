@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Aviso } from "@/components/ui";
 import { obtenerProductoWeb } from "@/lib/catalogo";
 import { NOMBRE_TIPO_VARIANTE } from "@/app/admin/productos/datos";
 import { Disponibilidad, Foto, Precio } from "../tarjeta-producto";
+import { AgregarAlCarrito } from "../../carrito/agregar-al-carrito";
 import { FichaVariantes } from "./ficha-variantes";
 
 async function cargar(id: string) {
@@ -22,12 +22,7 @@ export default async function ProductoWebPage({ params }: PageProps<"/catalogo/[
   if (!producto) notFound();
   const [principal] = producto.variantes;
   const conOpciones = producto.tipoVariante !== "ninguna" && producto.variantes.length > 1;
-  const descripcionYAviso = (
-    <>
-      {producto.descripcion && <p className="text-sm whitespace-pre-line">{producto.descripcion}</p>}
-      <Aviso>Muy pronto vas a poder agregarlo al carrito y hacer el pedido desde acá.</Aviso>
-    </>
-  );
+  const descripcion = producto.descripcion && <p className="text-sm whitespace-pre-line">{producto.descripcion}</p>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -47,6 +42,8 @@ export default async function ProductoWebPage({ params }: PageProps<"/catalogo/[
         <FichaVariantes
           nombre={producto.nombre}
           titulo={NOMBRE_TIPO_VARIANTE[producto.tipoVariante]}
+          ids={producto.variantes.map((v) => v.id)}
+          disponibles={producto.variantes.map((v) => v.disponible)}
           codigos={producto.variantes.map((v) => v.codigo)}
           fotos={producto.variantes.map((v) => (
             <Foto
@@ -66,7 +63,7 @@ export default async function ProductoWebPage({ params }: PageProps<"/catalogo/[
             </span>
           ))}
         >
-          {descripcionYAviso}
+          {descripcion}
         </FichaVariantes>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 md:gap-10">
@@ -80,7 +77,8 @@ export default async function ProductoWebPage({ params }: PageProps<"/catalogo/[
               <Precio venta={principal.precioVenta} oferta={principal.precioOferta} grande />
               <Disponibilidad disponible={principal.disponible} />
             </div>
-            {descripcionYAviso}
+            <AgregarAlCarrito varianteId={principal.id} disponible={principal.disponible} />
+            {descripcion}
           </div>
         </div>
       )}
