@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { AgregarAlCarrito } from "../../carrito/agregar-al-carrito";
 
-// Ficha de un producto con variantes: al elegir una, cambian la foto y el código.
+// Ficha de un producto con variantes: al elegir una, cambian la foto, el código y lo que se agrega al carrito.
 // Las fotos y las opciones llegan ya armadas desde el servidor, en el mismo orden.
 export function FichaVariantes({
   nombre,
   titulo,
+  ids,
+  disponibles,
   codigos,
   fotos,
   opciones,
@@ -14,6 +17,8 @@ export function FichaVariantes({
 }: {
   nombre: string;
   titulo: string;
+  ids: number[];
+  disponibles: boolean[];
   codigos: string[];
   fotos: React.ReactNode[];
   opciones: React.ReactNode[];
@@ -51,6 +56,7 @@ export function FichaVariantes({
             ))}
           </div>
         </fieldset>
+        <AgregarAlCarrito varianteId={ids[elegida]} disponible={disponibles[elegida]} />
         {children}
       </div>
     </div>

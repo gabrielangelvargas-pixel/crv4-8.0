@@ -16,12 +16,12 @@ Base de datos prevista: MySQL (Hostinger). Todas las tablas llevan `creado_en` y
 | ultimo_acceso | fecha y hora | |
 
 Reglas:
-- Login con nombre de usuario y contraseña (mínimo 8 caracteres).
+- Login con nombre de usuario (o teléfono, con o sin separadores) y contraseña (mínimo 8 caracteres).
 - Desde la gestión solo se crean usuarios con roles de gestión; las cuentas de clientes las crea el checkout.
 - Nadie cambia su propio rol ni se desactiva; quien no tiene acceso total no modifica ni crea administradores; siempre queda al menos un administrador activo.
 - Cambiar una contraseña cierra las sesiones abiertas de ese usuario (si es la propia, menos la actual).
 - Un usuario con ventas o movimientos de stock no se borra: se desactiva.
-- Un visitante puede navegar y llenar el carrito sin cuenta. Al confirmar el pedido se le piden algunos datos, se crea su Cliente y su Usuario (rol cliente) y queda con sesión persistente.
+- Un visitante puede navegar y llenar el carrito sin cuenta. Al confirmar el pedido se le piden algunos datos, se crea su Cliente y su Usuario (rol cliente, el teléfono es el nombre de usuario) y queda con sesión persistente. Si ya existe un cliente con ese teléfono y sin cuenta, la cuenta nueva se le asocia; si ya tiene cuenta, debe ingresar con su contraseña.
 
 ## 2. Rubro (cerrada, v1)
 
@@ -179,6 +179,8 @@ Reglas del pedido:
 - Los precios y costos de los renglones se toman de la base al registrar la venta, nunca del navegador. El precio aplicado es el de oferta si hay.
 - El adicional se puede cambiar mientras el pedido no esté entregado ni cancelado; el total se recalcula.
 - Solo se elimina definitivamente un pedido que nunca movió stock.
+- El carrito vive en el navegador (solo variante y cantidad); precios y disponibilidad se consultan siempre al servidor.
+- Un pedido web entra como canal web, estado pendiente y adicional 0; el costo de envío se carga después como adicional.
 - Pagos y medios de pago: más adelante.
 
 ## 10. MovimientoStock (cerrada, v1)

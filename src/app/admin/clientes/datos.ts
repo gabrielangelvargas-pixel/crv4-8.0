@@ -49,7 +49,7 @@ const texto = (max: number, nombre: string) =>
 const requerido = (max: number, nombre: string) =>
   z.string().trim().min(1, `Falta ${nombre.toLowerCase()}`).max(max, `${nombre} es muy largo`);
 
-const direccionRecibida = z.object({
+export const direccionRecibida = z.object({
   id: z.number().int().positive().optional(),
   alias: texto(60, "El alias"),
   calleNumero: requerido(150, "La calle y número"),
@@ -85,4 +85,10 @@ export function validarDirecciones(json: string): Resultado {
   const principal = Math.max(0, resultado.findIndex((d) => d.esPrincipal));
   resultado.forEach((d, i) => (d.esPrincipal = i === principal));
   return { ok: true, direcciones: resultado };
+}
+
+// Una línea para guardar en el pedido: "Av. Siempre Viva 742, Centro, Rosario, Santa Fe (timbre 2)".
+export function textoDireccion(d: Omit<DireccionValidada, "esPrincipal" | "id" | "alias">): string {
+  const partes = [d.calleNumero, d.barrio, d.localidad, d.provincia].filter(Boolean).join(", ");
+  return (d.referencias ? `${partes} (${d.referencias})` : partes).slice(0, 400);
 }
