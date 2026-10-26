@@ -123,25 +123,52 @@ export type ProductoWoo = {
   disponible: boolean;
 };
 
+// WooCommerce no permite ordenar por dos campos a la vez: primero se piden solo los id con su orden
+// y su fecha de publicación (liviano), se ordenan acá (orden del producto y, si empatan, el más
+// reciente primero) y después se piden completos solo los productos de la página elegida.
 export async function productosWoo(
   config: ConfigWoo,
   filtro: { categoria?: number; busqueda?: string; pagina: number },
 ): Promise<{ productos: ProductoWoo[]; total: number; paginas: number }> {
-  const parametros: Record<string, string> = {
-    per_page: String(PRODUCTOS_POR_PAGINA_WOO),
-    page: String(filtro.pagina),
-    status: "publish",
-    orderby: "menu_order",
-    order: "asc",
+  const base: Record<string, string> = { status: "publish" };
+  if (filtro.categoria) base.category = String(filtro.categoria);
+  if (filtro.busqueda) base.search = filtro.busqueda;
+
+  const indice: { id: number; orden: number; fecha: string }[] = [];
+  for (let pagina = 1; pagina <= 50; pagina++) {
+    const { datos, paginas } = await pedirLista(config, "products", {
+      ...base,
+      per_page: "100",
+      page: String(pagina),
+      orderby: "id",
+      order: "asc",
+      _fields: "id,menu_order,date_created_gmt",
+    });
+    indice.push(...datos.map((p) => ({ id: numero(p.id), orden: numero(p.menu_order), fecha: texto(p.date_created_gmt) })));
+    if (pagina >= paginas) break;
+  }
+  indice.sort((a, b) => a.orden - b.orden || b.fecha.localeCompare(a.fecha) || b.id - a.id);
+
+  const total = indice.length;
+  const paginas = Math.max(1, Math.ceil(total / PRODUCTOS_POR_PAGINA_WOO));
+  const desde = (filtro.pagina - 1) * PRODUCTOS_POR_PAGINA_WOO;
+  const ids = indice.slice(desde, desde + PRODUCTOS_POR_PAGINA_WOO).map((p) => p.id);
+  if (ids.length === 0) return { productos: [], total, paginas };
+
+  const { datos } = await pedirLista(config, "products", {
+    include: ids.join(","),
+    per_page: String(ids.length),
+    orderby: "include",
     _fields: "id,name,images,categories,price,regular_price,sale_price,on_sale,stock_status",
-  };
-  if (filtro.categoria) parametros.category = String(filtro.categoria);
-  if (filtro.busqueda) parametros.search = filtro.busqueda;
-  const { datos, total, paginas } = await pedirLista(config, "products", parametros);
+  });
+  const porId = new Map(datos.map((p) => [numero(p.id), p]));
   return {
     total,
     paginas,
-    productos: datos.map(aProducto),
+    productos: ids.flatMap((id) => {
+      const p = porId.get(id);
+      return p ? [aProducto(p)] : [];
+    }),
   };
 }
 
