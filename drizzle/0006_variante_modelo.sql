@@ -1,0 +1,1 @@
+ALTER TABLE `productos` MODIFY COLUMN `tipo_variante` enum('ninguna','color','tamano','presentacion','modelo') NOT NULL DEFAULT 'ninguna';

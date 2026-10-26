@@ -43,6 +43,13 @@
       "when": 1792804122838,
       "tag": "0005_rubros_visitas",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1793030374115,
+      "tag": "0006_variante_modelo",
+      "breakpoints": true
     }
   ]
 }

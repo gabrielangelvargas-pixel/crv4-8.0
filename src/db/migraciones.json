@@ -92,5 +92,13 @@
     "bps": true,
     "folderMillis": 1792804122838,
     "hash": "2820d9f9039f8f84e788b76dd48e760d3db46931ac77ebc8b5314e0ee7f3564f"
+  },
+  {
+    "sql": [
+      "ALTER TABLE `productos` MODIFY COLUMN `tipo_variante` enum('ninguna','color','tamano','presentacion','modelo') NOT NULL DEFAULT 'ninguna';"
+    ],
+    "bps": true,
+    "folderMillis": 1793030374115,
+    "hash": "eab99297b95570a8c89c36d9f861152fe8854ffad687c756a265b9f69d45a773"
   }
 ]

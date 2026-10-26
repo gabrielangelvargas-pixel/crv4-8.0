@@ -51,7 +51,7 @@ Reglas:
 | descripcion | texto | |
 | rubro_id | FK a Rubro | siempre un subrubro |
 | proveedor_id | FK a Proveedor | |
-| tipo_variante | ninguna / color / tamaño / presentación | una sola dimensión por producto (confirmado) |
+| tipo_variante | ninguna / color / tamaño / presentación / modelo | una sola dimensión por producto (confirmado) |
 | imagen | texto, en desuso | foto vieja de la variante principal; al guardar el producto pasa a la variante y queda vacía |
 | visible_web | booleano | |
 | destacado | booleano | portada |
