@@ -61,6 +61,7 @@ const ETIQUETA_VALOR: Record<Exclude<TipoVariante, "ninguna">, [string, string]>
   color: ["Color", "Rojo"],
   tamano: ["Tamaño", "Grande"],
   presentacion: ["Presentación", "Blister"],
+  modelo: ["Modelo", "Clásico"],
 };
 
 let siguienteClave = 0;

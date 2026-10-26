@@ -23,6 +23,7 @@ export const NOMBRE_TIPO_VARIANTE: Record<(typeof TIPOS_VARIANTE)[number], strin
   color: "Color",
   tamano: "Tamaño",
   presentacion: "Presentación",
+  modelo: "Modelo",
 };
 
 const varianteRecibida = z.object({

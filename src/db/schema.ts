@@ -125,7 +125,7 @@ export const proveedores = mysqlTable("proveedores", {
   ...timestamps,
 });
 
-export const TIPOS_VARIANTE = ["ninguna", "color", "tamano", "presentacion"] as const;
+export const TIPOS_VARIANTE = ["ninguna", "color", "tamano", "presentacion", "modelo"] as const;
 
 // 3. Producto (ficha común)
 export const productos = mysqlTable(
